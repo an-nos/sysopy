@@ -1,12 +1,13 @@
 #!/bin/bash
 
-for I in {27..50}
+for I in {1..25}
 do
-	cat /usr/share/dict/words | sort -R | head -200 > different/file$I-a.txt
-	cp different/file$I-a.txt different/file$I-b.txt
-	for J in {1..10}
+	VAR=different
+	cat /usr/share/dict/words | sort -R | head -100 > $VAR/file$I-a.txt
+	cp $VAR/file$I-a.txt $VAR/file$I-b.txt
+	for J in {1..80}
 	do
-		sed -i "$(($RANDOM % 200))s/.*/$(cat /usr/share/dict/words | sort -R | head -1)/" different/file$I-b.txt
+		sed -i "$((($RANDOM +1) % 200))s/.*/$(cat /usr/share/dict/words | sort -R | head -1)/" $VAR/file$I-b.txt
 	done
 done
 
