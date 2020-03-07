@@ -1,0 +1,12 @@
+#!/bin/bash
+
+for I in {27..50}
+do
+	cat /usr/share/dict/words | sort -R | head -200 > different/file$I-a.txt
+	cp different/file$I-a.txt different/file$I-b.txt
+	for J in {1..10}
+	do
+		sed -i "$(($RANDOM % 200))s/.*/$(cat /usr/share/dict/words | sort -R | head -1)/" different/file$I-b.txt
+	done
+done
+

@@ -1,0 +1,2 @@
+cat /usr/share/dict/words | sort -R | head -1024 > file.txt
+sed -i "1s/.*/$V/" files/file1.txt
