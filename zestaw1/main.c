@@ -2,6 +2,7 @@
 #include<stdlib.h>
 #include<stdio.h>
 #include<string.h>
+#include<time.h>
 
 void print_pointer_arr(pointer_arr* pointer_arr){
 	for(int i = 0; i<pointer_arr->free_idx; i++){
@@ -12,6 +13,7 @@ void print_pointer_arr(pointer_arr* pointer_arr){
 		}
 	}
 }
+
 
 int main(int argc, char** argv){
     if(argc<3) {

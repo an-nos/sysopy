@@ -1,40 +1,40 @@
-5c5
-< changeling
+12c12
+< aye
 ---
-> dislike
-9c9
-< drifts
+> portraitist
+19c19
+< welders
 ---
-> Bohemia's
-55c55
-< verities
+> enforcer
+47c47
+< uncommunicative
 ---
-> commandments
-69c69
-< Tesla
+> perplex
+66c66
+< it'd
 ---
-> forgiven
-95c95
-< angled
+> percussionist
+87c87
+< Holloway
 ---
-> gaseous
-102c102
-< microscopy's
+> Agatha
+148c148
+< touchiest
 ---
-> fretting
-136c136
-< utility's
+> baggiest
+167c167
+< Curacao's
 ---
-> Hines's
-143c143
-< wincing
+> Astaire
+173c173
+< weaponless
 ---
-> incriminates
-156c156
-< obscenest
+> platinum's
+189c189
+< interlace
 ---
-> Marathon
-171c171
-< causeway
+> recording's
+196c196
+< doormats
 ---
-> flexibly
+> fluxes
