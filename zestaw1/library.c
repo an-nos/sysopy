@@ -5,7 +5,7 @@
 #include <string.h>
 
 #define MAX_COMMAND_LEN 1000
-
+#define MAX_OPERATION_LEN 1000
 operation_block* create_operation_block(int difference_count){
     operation_block* operation_block = malloc(sizeof(operation_block));
     operation_block->difference_count = difference_count;
@@ -68,7 +68,7 @@ int insert_operation_block(char* diff_file_path, pointer_arr* pointer_arr){
 
 	while ((read = getline(&line, &len, diff_file)) != -1) {
 		if(!(line[0] == '<' || line[0] == '>' || line[0] == '-')){
-            operation_block->operations[++operation_num] = calloc(strlen(line),sizeof(char*));
+            operation_block->operations[++operation_num] = calloc(MAX_OPERATION_LEN,sizeof(char*));
 		}
         strcat(operation_block->operations[operation_num],line);
 	}
@@ -116,8 +116,9 @@ void delete_operation_block(pointer_arr* pointer_arr, int block_idx){
 void delete_pointer_arr(pointer_arr* pointer_arr){
 	if(pointer_arr == NULL) return;
 	if(pointer_arr->operation_blocks != NULL) {
-		for (int i = 0; i < pointer_arr->free_idx; i++) {
-			if (pointer_arr->operation_blocks[i] != NULL) delete_operation_block(pointer_arr, i);
+		for (int i = pointer_arr->free_idx-1; i>=0; i--) {
+			if (pointer_arr->operation_blocks[i] != NULL)
+				delete_operation_block(pointer_arr, i);
 		}
 		free(pointer_arr->operation_blocks);
 	}
