@@ -9,7 +9,7 @@ struct operation_block{
 
 struct pointer_arr{
     operation_block** operation_blocks;
-    int operation_count;
+    int block_count;
     int free_idx;
 }; typedef struct pointer_arr pointer_arr;
 
@@ -26,6 +26,9 @@ void delete_operation(pointer_arr* pointer_arr, int block_idx, int operation_idx
 
 void delete_operation_block(pointer_arr* pointer_arr, int block_idx);
 
+void delete_pointer_arr(pointer_arr* pointer_arr);
+
 void print_pointer_arr(pointer_arr* pointer_arr);
+
 
 #endif //LAB1ZAD1_LIBRARY_H

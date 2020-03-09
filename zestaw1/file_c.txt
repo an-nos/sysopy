@@ -1,40 +1,38 @@
-12c12
-< aye
+42c42
+< Aussie's
 ---
-> portraitist
-19c19
-< welders
+> subtracted
+45c45
+< helot
 ---
-> enforcer
-47c47
-< uncommunicative
+> seat
+51c51
+< drums
 ---
-> perplex
-66c66
-< it'd
+> hasheesh's
+64c64
+< evidence's
 ---
-> percussionist
-87c87
-< Holloway
+> Thursday
+111c111
+< dalmatians
 ---
-> Agatha
-148c148
-< touchiest
+> Cabrera
+123c123
+< Poconos's
 ---
-> baggiest
-167c167
-< Curacao's
+> Taoist
+129c129
+< negativity's
 ---
-> Astaire
-173c173
-< weaponless
+> incombustible
+170,171c170,171
+< nutshell
+< overpriced
 ---
-> platinum's
-189c189
-< interlace
+> Hugo's
+> bottle's
+184c184
+< Yokohama's
 ---
-> recording's
-196c196
-< doormats
----
-> fluxes
+> Naziism's
