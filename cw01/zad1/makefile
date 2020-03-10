@@ -1,15 +1,16 @@
 CC = gcc
+FLAGS = -Wall
 
 all: static shared clean
 
 static: library.c
-	$(CC) -c library.c
+	$(CC) $(FLAGS) -c library.c
 	ar rcs library.a library.o
 	make clean
 
 shared: library.c
-	$(CC) -fPIC -c library.c
-	$(CC) -fPIC -shared -o library.so library.o
+	$(CC) $(FLAGS) -fPIC -c library.c
+	$(CC) $(FLAGS) -fPIC -shared -o library.so library.o
 	make clean
 
 clean:

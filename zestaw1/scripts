@@ -1,6 +1,0 @@
-cat /usr/share/dict/words | sort -R | head -1024 > file.txt
-sed -i "1s/.*/$V/" files/file1.txt
-D=`ls -1 -d $PWD/files/different/* | sed ':a;N;$!ba;s/\n/:/g' | sed 's/:\([^:]*\):/:\1 /g'`
-S=`ls -1 -d $PWD/files/similar/* | sed ':a;N;$!ba;s/\n/:/g' | sed 's/:\([^:]*\):/:\1 /g'`
-M=`ls -1 -d $PWD/files/medium/* | sed ':a;N;$!ba;s/\n/:/g' | sed 's/:\([^:]*\):/:\1 /g'`
-D5=`ls -1 -d ../files/different/* | head -10 | sed ':a;N;$!ba;s/\n/:/g' | sed 's/:\([^:]*\):/:\1 /g'`

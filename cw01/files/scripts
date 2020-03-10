@@ -1,0 +1,3 @@
+cat /usr/share/dict/words | sort -R | head -1024 > file.txt
+sed -i "1s/.*/$V/" files/file1.txt
+D5=`ls -1 -d ../files/different/* | head -10 | sed ':a;N;$!ba;s/\n/:/g' | sed 's/:\([^:]*\):/:\1 /g'`

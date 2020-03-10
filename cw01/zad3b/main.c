@@ -27,16 +27,6 @@ saved_times* save_times(saved_times* new_times, struct tms* time){
 	return new_times;
 }
 
-void print_pointer_arr(pointer_arr* pointer_arr){
-	for(int i = 0; i<pointer_arr->free_idx; i++){
-		operation_block* operation_block = pointer_arr->operation_blocks[i];
-		printf("%d",i);
-		for(int j=0; j<operation_block->free_idx && operation_block->operations[i]!=NULL; j++){
-			printf("%s", operation_block->operations[j]);
-		}
-	}
-}
-
 int main(int argc, char** argv){
 	struct tms* start = malloc(sizeof(struct tms));
 	struct tms* stop = malloc(sizeof(struct tms));
@@ -60,10 +50,16 @@ int main(int argc, char** argv){
 	for(int i =1; i<argc; i++) {
 		if (strcmp(argv[i], "compare_pairs") == 0) {
 			while (++i < argc && strchr(argv[i], ':') != NULL) {
+				given_pairs++;
+				if(given_pairs>number_of_pairs){
+					printf("More given pairs than declared");
+					exit(EXIT_FAILURE);
+				}
 				char *file_a = strtok(argv[i], ":");
 				char *file_b = strtok(NULL, ":");
 				char *file_c = compare_and_write(file_a, file_b);
 				insert_operation_block(file_c, pointer_arr);
+
 			}
 			i--;
 		} else if (strcmp(argv[i], "remove_block") == 0) {
@@ -100,13 +96,5 @@ int main(int argc, char** argv){
 	free(saved_start);
 
     delete_pointer_arr(pointer_arr);
-
-//	pointer_arr* pointer_arr = create_pointer_arr(2);
-//	insert_operation_block(compare_and_write("files/similar/file1-a.txt","files/similar/file1-b.txt"),pointer_arr);
-//	insert_operation_block(compare_and_write("files/similar/file2-a.txt","files/similar/file2-b.txt"),pointer_arr);
-//	delete_operation(pointer_arr, 0,0);
-//	delete_operation_block(pointer_arr, 0);
-//	delete_pointer_arr(pointer_arr);
-//	print_pointer_arr(pointer_arr);
 
 }

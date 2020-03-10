@@ -1,15 +1,16 @@
 CC = gcc
+FLAGS = -Wall
 
 all: static shared clean
 
 static: library.c
-	$(CC) -c library.c
+	$(CC) $(FLAGS) -c library.c
 	ar rcs library.a library.o
 	make clean
 
 shared: library.c
-	$(CC) -fPIC -c library.c
-	$(CC) -fPIC -shared -o library.so library.o
+	$(CC) $(FLAGS) -fPIC -c library.c
+	$(CC) $(FLAGS) -fPIC -shared -o library.so library.o
 	make clean
 
 clean:
@@ -26,45 +27,36 @@ clean_all:
 
 static_main: main.c
 	make static
-	$(CC) -c main.c
-	$(CC) main.o library.a -o main
+	$(CC) $(FLAGS) -c main.c
+	$(CC) $(FLAGS) main.o library.a -o main
 	make clean
 
 shared_main: main.c
 	make shared
-	$(CC) main.c library.so -L ./ -o main -Wl,-rpath,$(shell pwd)
+	$(CC) $(FLAGS) main.c library.so -L ./ -o main -Wl,-rpath,$(shell pwd)
 	make clean
 
 dynamic_main: main_dyn.c
 	make shared
-	$(CC) main_dyn.c -ldl -o main_dyn -I .
+	$(CC) $(FLAGS) main_dyn.c -ldl -o main_dyn -I .
 	make clean
 
-static_mainO:
-	make CC="gcc -O$(Oval)" static_main
-
-shared_mainO:
-	make CC="gcc -O$(Oval)" shared_main
-
-dynamic_mainO:
-	make CC="gcc -O$(Oval)" dynamic_main
-
-test_staticO:
-	make static_mainO
-	@echo "test static O$(Oval)" >> raport3b.txt
-	make test >> raport3b.txt
+test_static:
+	make static_main
+	@echo "test static" >> raport3a.txt
+	make test >> raport3a.txt
 	make clean_all
 
-test_sharedO:
-	make shared_mainO
-	@echo "test shared O$Oval" >> raport3b.txt
-	make test >> raport3b.txt
+test_shared:
+	make shared_main
+	@echo "test shared" >> raport3a.txt
+	make test >> raport3a.txt
 	make clean_all
 
-test_dynamicO:
-	make dynamic_mainO
-	@echo "test dynamic O$Oval">> raport3b.txt
-	make test_dyn >> raport3b.txt
+test_dynamic:
+	make dynamic_main
+	@echo "test dynamic" >> raport3a.txt
+	make test_dyn >> raport3a.txt
 	make clean_all
 
 test:
@@ -92,6 +84,8 @@ test:
 	@./main 10 compare_pairs ../files/similar/file10-a.txt:../files/similar/file10-b.txt ../files/similar/file11-a.txt:../files/similar/file11-b.txt ../files/similar/file12-a.txt:../files/similar/file12-b.txt ../files/similar/file13-a.txt:../files/similar/file13-b.txt ../files/similar/file14-a.txt:../files/similar/file14-b.txt ../files/similar/file15-a.txt:../files/similar/file15-b.txt ../files/similar/file16-a.txt:../files/similar/file16-b.txt ../files/similar/file17-a.txt:../files/similar/file17-b.txt ../files/similar/file18-a.txt:../files/similar/file18-b.txt ../files/similar/file19-a.txt:../files/similar/file19-b.txt remove_block 0 remove_block 0 remove_block 0 remove_block 0 remove_block 2
 	@echo "compare 5 similar 5 different remove blocks 0 7 0 5"
 	@./main 10 compare_pairs ../files/similar/file10-a.txt:../files/similar/file10-b.txt ../files/similar/file11-a.txt:../files/similar/file11-b.txt ../files/similar/file12-a.txt:../files/similar/file12-b.txt ../files/similar/file13-a.txt:../files/similar/file13-b.txt ../files/similar/file14-a.txt:../files/similar/file14-b.txt 	../files/different/file10-a.txt:../files/different/file10-b.txt ../files/different/file11-a.txt:../files/different/file11-b.txt ../files/different/file12-a.txt:../files/different/file12-b.txt ../files/different/file13-a.txt:../files/different/file13-b.txt ../files/different/file14-a.txt:../files/different/file14-b.txt remove_block 0 remove_block 7 remove_block 0 remove_block 4
+	@echo "compare 25 different remove blocks 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"
+	@./main 25 compare_pairs ../files/different/file10-a.txt:../files/different/file10-b.txt ../files/different/file11-a.txt:../files/different/file11-b.txt ../files/different/file12-a.txt:../files/different/file12-b.txt ../files/different/file13-a.txt:../files/different/file13-b.txt ../files/different/file14-a.txt:../files/different/file14-b.txt ../files/different/file15-a.txt:../files/different/file15-b.txt ../files/different/file16-a.txt:../files/different/file16-b.txt ../files/different/file17-a.txt:../files/different/file17-b.txt ../files/different/file18-a.txt:../files/different/file18-b.txt ../files/different/file19-a.txt:../files/different/file19-b.txt ../files/different/file1-a.txt:../files/different/file1-b.txt ../files/different/file20-a.txt:../files/different/file20-b.txt ../files/different/file21-a.txt:../files/different/file21-b.txt ../files/different/file22-a.txt:../files/different/file22-b.txt ../files/different/file23-a.txt:../files/different/file23-b.txt ../files/different/file24-a.txt:../files/different/file24-b.txt ../files/different/file25-a.txt:../files/different/file25-b.txt ../files/different/file2-a.txt:../files/different/file2-b.txt ../files/different/file3-a.txt:../files/different/file3-b.txt ../files/different/file4-a.txt:../files/different/file4-b.txt ../files/different/file5-a.txt:../files/different/file5-b.txt ../files/different/file6-a.txt:../files/different/file6-b.txt ../files/different/file7-a.txt:../files/different/file7-b.txt ../files/different/file8-a.txt:../files/different/file8-b.txt ../files/different/file9-a.txt:../files/different/file9-b.txt remove_block 0 remove_block 0 remove_block 0 remove_block 0 remove_block 0 remove_block 0 remove_block 0 remove_block 0 remove_block 0 remove_block 0 remove_block 0 remove_block 0 remove_block 0 remove_block 0 remove_block 0
 	@echo "compare 5 medium remove block 0 compare 5 different remove block 0 compare 5 similar remove block 7"
 	@./main 15 compare_pairs ../files/medium/file10-a.txt:../files/medium/file10-b.txt ../files/medium/file11-a.txt:../files/medium/file11-b.txt ../files/medium/file12-a.txt:../files/medium/file12-b.txt ../files/medium/file13-a.txt:../files/medium/file13-b.txt ../files/medium/file14-a.txt:../files/medium/file14-b.txt remove_block 0 compare_pairs ../files/different/file10-a.txt:../files/different/file10-b.txt ../files/different/file11-a.txt:../files/different/file11-b.txt ../files/different/file12-a.txt:../files/different/file12-b.txt ../files/different/file13-a.txt:../files/different/file13-b.txt ../files/different/file14-a.txt:../files/different/file14-b.txt remove_block 0 compare_pairs ../files/similar/file10-a.txt:../files/similar/file10-b.txt ../files/similar/file11-a.txt:../files/similar/file11-b.txt ../files/similar/file12-a.txt:../files/similar/file12-b.txt ../files/similar/file13-a.txt:../files/similar/file13-b.txt ../files/similar/file14-a.txt:../files/similar/file14-b.txt remove_block 7
 
