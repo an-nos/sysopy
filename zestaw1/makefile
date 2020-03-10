@@ -37,10 +37,19 @@ clean_all:
 	make shared
 	$(CC) main_dyn.c -ldl -o main_dyn -I .
 
-
 3clean:
 	make clean
 	rm -f main
+
+3bstatic:
+	make CC="gcc -O$(Oval)" 3static
+
+3bshared:
+	make CC="gcc -O$(Oval)" 3shared
+
+3bdynamic:
+	make CC="gcc -O$(Oval)" 3dynamic
+
 
 test_static:
 	make 3static
@@ -56,6 +65,21 @@ test_dynamic:
 	make 3dynamic
 	@echo "test dynamic" >> raport3a.txt
 	make test_dyn >> raport3a.txt
+
+test_staticO:
+	make 3bstatic
+	@echo "test static O$(Oval)" >> raport3b.txt
+	make test >> raport3b.txt
+
+test_sharedO:
+	make 3bshared
+	@echo "test shared O$Oval" >> raport3b.txt
+	make test >> raport3b.txt
+
+test_dynamicO:
+	make 3bdynamic
+	@echo "test dynamic O$Oval">> raport3b.txt
+	make test_dyn >> raport3b.txt
 
 test:
 	@echo "5 different pairs"

@@ -1,0 +1,504 @@
+test static O1
+make[1]: Entering directory '/home/anna/CLionProjects/sysopy/zestaw1'
+5 different pairs
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.000000
+10 different pairs
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.030000
+25 different pairs
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.040000
+5 medium pairs
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.000000
+10 medium pairs
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.020000
+25 medium pairs
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.020000
+5 similar pairs
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.000000
+10 similar pairs
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.030000
+25 similar pairs
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.020000
+compare 5 different 5 medium 5 similar
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.020000
+compare 25 different, remove blocks 0 0 0 0 2
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.020000
+compare 5 similar 5 different remove blocks 0 7 0 5
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.010000
+compare 5 medium remove block 0 compare 5 different remove block 0 compare 5 similar remove block 7
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.020000
+make[1]: Leaving directory '/home/anna/CLionProjects/sysopy/zestaw1'
+test static O2
+make[1]: Entering directory '/home/anna/CLionProjects/sysopy/zestaw1'
+5 different pairs
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.020000
+10 different pairs
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.010000
+25 different pairs
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.030000
+5 medium pairs
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.020000
+10 medium pairs
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.010000
+25 medium pairs
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.030000
+5 similar pairs
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.010000
+10 similar pairs
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.010000
+25 similar pairs
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.040000
+compare 5 different 5 medium 5 similar
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.020000
+compare 25 different, remove blocks 0 0 0 0 2
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.010000
+compare 5 similar 5 different remove blocks 0 7 0 5
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.010000
+compare 5 medium remove block 0 compare 5 different remove block 0 compare 5 similar remove block 7
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.020000
+make[1]: Leaving directory '/home/anna/CLionProjects/sysopy/zestaw1'
+test static O3
+make[1]: Entering directory '/home/anna/CLionProjects/sysopy/zestaw1'
+5 different pairs
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.010000
+10 different pairs
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.020000
+25 different pairs
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.030000
+5 medium pairs
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.010000
+10 medium pairs
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.010000
+25 medium pairs
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.040000
+5 similar pairs
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.010000
+10 similar pairs
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.020000
+25 similar pairs
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.060000
+compare 5 different 5 medium 5 similar
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.030000
+compare 25 different, remove blocks 0 0 0 0 2
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.020000
+compare 5 similar 5 different remove blocks 0 7 0 5
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.020000
+compare 5 medium remove block 0 compare 5 different remove block 0 compare 5 similar remove block 7
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.040000
+make[1]: Leaving directory '/home/anna/CLionProjects/sysopy/zestaw1'
+test static Os
+make[1]: Entering directory '/home/anna/CLionProjects/sysopy/zestaw1'
+5 different pairs
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.020000
+10 different pairs
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.020000
+25 different pairs
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.030000
+5 medium pairs
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.000000
+10 medium pairs
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.010000
+25 medium pairs
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.030000
+5 similar pairs
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.010000
+10 similar pairs
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.010000
+25 similar pairs
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.040000
+compare 5 different 5 medium 5 similar
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.020000
+compare 25 different, remove blocks 0 0 0 0 2
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.010000
+compare 5 similar 5 different remove blocks 0 7 0 5
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.010000
+compare 5 medium remove block 0 compare 5 different remove block 0 compare 5 similar remove block 7
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.020000
+make[1]: Leaving directory '/home/anna/CLionProjects/sysopy/zestaw1'
+test shared Oval
+make[1]: Entering directory '/home/anna/CLionProjects/sysopy/zestaw1'
+5 different pairs
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.010000
+10 different pairs
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.030000
+25 different pairs
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.020000
+5 medium pairs
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.000000
+10 medium pairs
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.020000
+25 medium pairs
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.020000
+5 similar pairs
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.010000
+10 similar pairs
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.010000
+25 similar pairs
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.030000
+compare 5 different 5 medium 5 similar
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.020000
+compare 25 different, remove blocks 0 0 0 0 2
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.010000
+compare 5 similar 5 different remove blocks 0 7 0 5
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.020000
+compare 5 medium remove block 0 compare 5 different remove block 0 compare 5 similar remove block 7
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.020000
+make[1]: Leaving directory '/home/anna/CLionProjects/sysopy/zestaw1'
+test shared Oval
+make[1]: Entering directory '/home/anna/CLionProjects/sysopy/zestaw1'
+5 different pairs
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.010000
+10 different pairs
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.020000
+25 different pairs
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.030000
+5 medium pairs
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.010000
+10 medium pairs
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.020000
+25 medium pairs
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.040000
+5 similar pairs
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.010000
+10 similar pairs
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.010000
+25 similar pairs
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.030000
+compare 5 different 5 medium 5 similar
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.020000
+compare 25 different, remove blocks 0 0 0 0 2
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.010000
+compare 5 similar 5 different remove blocks 0 7 0 5
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.010000
+compare 5 medium remove block 0 compare 5 different remove block 0 compare 5 similar remove block 7
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.020000
+make[1]: Leaving directory '/home/anna/CLionProjects/sysopy/zestaw1'
+test shared Oval
+make[1]: Entering directory '/home/anna/CLionProjects/sysopy/zestaw1'
+5 different pairs
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.010000
+10 different pairs
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.010000
+25 different pairs
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.040000
+5 medium pairs
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.000000
+10 medium pairs
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.020000
+25 medium pairs
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.030000
+5 similar pairs
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.000000
+10 similar pairs
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.010000
+25 similar pairs
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.030000
+compare 5 different 5 medium 5 similar
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.020000
+compare 25 different, remove blocks 0 0 0 0 2
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.010000
+compare 5 similar 5 different remove blocks 0 7 0 5
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.020000
+compare 5 medium remove block 0 compare 5 different remove block 0 compare 5 similar remove block 7
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.010000
+make[1]: Leaving directory '/home/anna/CLionProjects/sysopy/zestaw1'
+test shared Oval
+make[1]: Entering directory '/home/anna/CLionProjects/sysopy/zestaw1'
+5 different pairs
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.010000
+10 different pairs
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.020000
+25 different pairs
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.040000
+5 medium pairs
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.010000
+10 medium pairs
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.010000
+25 medium pairs
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.040000
+5 similar pairs
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.010000
+10 similar pairs
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.010000
+25 similar pairs
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.030000
+compare 5 different 5 medium 5 similar
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.020000
+compare 25 different, remove blocks 0 0 0 0 2
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.010000
+compare 5 similar 5 different remove blocks 0 7 0 5
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.010000
+compare 5 medium remove block 0 compare 5 different remove block 0 compare 5 similar remove block 7
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.020000
+make[1]: Leaving directory '/home/anna/CLionProjects/sysopy/zestaw1'
+test dynamic Oval
+make[1]: Entering directory '/home/anna/CLionProjects/sysopy/zestaw1'
+5 different pairs
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.020000
+10 different pairs
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.010000
+25 different pairs
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.030000
+5 medium pairs
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.010000
+10 medium pairs
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.010000
+25 medium pairs
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.040000
+5 similar pairs
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.010000
+10 similar pairs
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.010000
+25 similar pairs
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.030000
+compare 5 different 5 medium 5 similar
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.020000
+compare 25 different, remove blocks 0 0 0 0 2
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.010000
+compare 5 similar 5 different remove blocks 0 7 0 5
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.010000
+compare 5 medium remove block 0 compare 5 different remove block 0 compare 5 similar remove block 7
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.020000
+make[1]: Leaving directory '/home/anna/CLionProjects/sysopy/zestaw1'
+test dynamic Oval
+make[1]: Entering directory '/home/anna/CLionProjects/sysopy/zestaw1'
+5 different pairs
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.000000
+10 different pairs
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.020000
+25 different pairs
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.030000
+5 medium pairs
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.010000
+10 medium pairs
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.010000
+25 medium pairs
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.030000
+5 similar pairs
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.010000
+10 similar pairs
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.010000
+25 similar pairs
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.030000
+compare 5 different 5 medium 5 similar
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.010000
+compare 25 different, remove blocks 0 0 0 0 2
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.020000
+compare 5 similar 5 different remove blocks 0 7 0 5
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.010000
+compare 5 medium remove block 0 compare 5 different remove block 0 compare 5 similar remove block 7
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.020000
+make[1]: Leaving directory '/home/anna/CLionProjects/sysopy/zestaw1'
+test dynamic Oval
+make[1]: Entering directory '/home/anna/CLionProjects/sysopy/zestaw1'
+5 different pairs
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.010000
+10 different pairs
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.010000
+25 different pairs
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.030000
+5 medium pairs
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.010000
+10 medium pairs
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.020000
+25 medium pairs
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.030000
+5 similar pairs
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.000000
+10 similar pairs
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.010000
+25 similar pairs
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.030000
+compare 5 different 5 medium 5 similar
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.020000
+compare 25 different, remove blocks 0 0 0 0 2
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.010000
+compare 5 similar 5 different remove blocks 0 7 0 5
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.020000
+compare 5 medium remove block 0 compare 5 different remove block 0 compare 5 similar remove block 7
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.010000
+make[1]: Leaving directory '/home/anna/CLionProjects/sysopy/zestaw1'
+test dynamic Oval
+make[1]: Entering directory '/home/anna/CLionProjects/sysopy/zestaw1'
+5 different pairs
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.010000
+10 different pairs
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.020000
+25 different pairs
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.040000
+5 medium pairs
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.010000
+10 medium pairs
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.020000
+25 medium pairs
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.020000
+5 similar pairs
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.010000
+10 similar pairs
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.010000
+25 similar pairs
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.030000
+compare 5 different 5 medium 5 similar
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.020000
+compare 25 different, remove blocks 0 0 0 0 2
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.010000
+compare 5 similar 5 different remove blocks 0 7 0 5
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.010000
+compare 5 medium remove block 0 compare 5 different remove block 0 compare 5 similar remove block 7
+USER --- SYS --- REAL
+0.000000 - 0.000000 - 0.010000
+make[1]: Leaving directory '/home/anna/CLionProjects/sysopy/zestaw1'
