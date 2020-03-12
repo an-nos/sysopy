@@ -11,7 +11,6 @@ char** create_empty_strings(int line_count, int line_len){
 	char** strings = calloc(line_count, sizeof(char*));
 	for(int i = 0; i<line_count; i++){
 		strings[i] = calloc(line_len+1, sizeof(char));
-		strcat(strings[i],"");
 	}
 	return strings;
 }
@@ -40,7 +39,6 @@ char** create_random(int line_count, int line_len){
 		strings[i][line_len] = '\n';
 	}
 
-//	for(int i = 0; i<line_count; i++) printf("%s\n",strings[i]);
 	return strings;
 }
 
@@ -54,7 +52,7 @@ void generate(char* file_name, int line_count, int line_len, int use_f){
 		fclose(file);
 	}
 	else{
-		int fd = open(file_name, O_WRONLY | O_CREAT);
+		int fd = open(file_name, O_WRONLY | O_CREAT, 0666);
 		for(int i = 0; i < line_count; i++){
 			write(fd, strings[i], line_len+1);
 		}
@@ -67,18 +65,18 @@ void copy(char* file_name, char* copy_name, int line_count, int line_len, int us
 	char ** strings = create_empty_strings(line_count, line_len);
 	if(use_f == 1) {
 		FILE *file = fopen(file_name, "r");
-		FILE *copy = fopen(copy_name, "w");
+		FILE *copy = fopen(copy_name, "w+");
 		for (int i = 0; i < line_count; i++) {
-			fread(strings[i], sizeof(char), line_len + 1, file);
-			fwrite(strings[i], sizeof(char), line_len + 1, copy);
+			fread(strings[i], sizeof(char), line_len+1, file);
+			fwrite(strings[i], sizeof(char), line_len+1, copy);
 		}
 		fclose(file);
 		fclose(copy);
 	}
 	else{
 		int fd = open(file_name, O_RDONLY);
-		int cd = open(copy_name, O_WRONLY | O_CREAT);
-		for(int i =0; i < line_count; i++){
+		int cd = open(copy_name, O_WRONLY | O_CREAT, 0666);
+		for(int i = 0; i < line_count; i++){
 			read(fd, strings[i], line_len+1);
 			write(cd, strings[i], line_len+1);
 		}
@@ -192,16 +190,86 @@ void sort(char* file_name, int line_count, int line_len, int use_f){
 		close(fd);
 	}
 }
-
+//TODO: errors of opening, reading, writing
 int main(int argc, char** argv){
-//	generate("dupa.txt", 5, 5, 1);
-//	copy("dupa.txt","chuj.txt",5,5,0);
+	char* error_line = "Invalid number of arguments.";
+	if(argc < 5){
+		printf("%s\n", error_line);
+		exit(EXIT_FAILURE);
+	}
+
+	int line_count, line_len, use_f = 1;
+	char* command = argv[1];
+	char* file_name = argv[2];
+	char* mode;
+
+	if(strcmp(command, "generate") == 0) {
+		error_line = "Invalid arguments (expected: generate filename line_count line_length [sys/lib])";
+		line_count = atoi(argv[3]);
+		line_len = atoi(argv[4]);
+		if (line_count == 0 || line_len == 0) {
+			printf("%s\n", error_line);
+			exit(EXIT_FAILURE);
+		}
+
+		if(argc == 6){
+			mode = argv[5];
+			if (strcmp(mode, "sys")) use_f = 0;
+		}
+		generate(file_name, line_count, line_len, use_f);
+		exit(EXIT_SUCCESS);
+	}
+	if(strcmp(command, "sort") == 0){
+		error_line = "Invalid arguments (expected: sort file_name line_count line_length sys/lib)";
+		if(argc < 6){
+			printf("%s\n", error_line);
+			exit(EXIT_FAILURE);
+		}
+		line_count = atoi(argv[3]);
+		line_len = atoi(argv[4]);
+		mode = argv[5];
+		if(line_count == 0 || line_len == 0 || (strcmp(mode, "sys") != 0 && strcmp(mode, "lib") != 0)){
+			printf("%s\n", error_line);
+			exit(EXIT_FAILURE);
+		}
+
+		if(strcmp(mode, "sys") == 0) use_f = 0;
+		sort(file_name, line_count, line_len, use_f);
+		exit(EXIT_SUCCESS);
+	}
+
+	if(strcmp(command, "copy") == 0){
+		error_line = "Invalid arguments (expected: copy file_name copy_name line_count line_length sys/lib)";
+		if(argc < 7){
+			printf("%s\n",error_line);
+			exit(EXIT_SUCCESS);
+		}
+		char* copy_name = argv[3];
+		line_count = atoi(argv[4]);
+		line_len = atoi(argv[5]);
+		mode = argv[6];
+		if(line_count == 0 || line_len == 0 || (strcmp(mode, "sys") != 0 && strcmp(mode, "lib") != 0)){
+			printf("%s\n", error_line);
+			exit(EXIT_FAILURE);
+		}
+
+		if(strcmp(mode,"sys") == 0) use_f = 0;
+		copy(file_name, copy_name, line_count, line_len, use_f);
+		exit(EXIT_SUCCESS);
+	}
+
+	error_line = "Invalid command";
+	printf("%s\n",error_line);
+	exit(EXIT_FAILURE);
+
+//	generate("dupa.txt", 5, 5, 0);
+//	copy("lol2","lol3",10,10,0);
 //	FILE* file = fopen("dupa.txt", "r+");
 //	swap_lines_lib(file,1,2,5);
 //	fclose(file);
 //	int fd = open("dupa.txt", O_RDWR);
 //	swap_lines_sys(fd, 1, 2, 5);
 //	close(fd);
-	sort("dupa.txt", 5, 5, 0);
+//	sort("dupa.txt", 5, 5, 0);
 }
 
