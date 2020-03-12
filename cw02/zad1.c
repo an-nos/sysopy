@@ -4,8 +4,28 @@
 #include<string.h>
 #include<fcntl.h>
 #include<unistd.h>
+#include <sys/times.h>
 #include<sys/types.h>
 #include<sys/stat.h>
+
+struct saved_times{
+	double user;
+	double real;
+}; typedef struct saved_times saved_times;
+
+saved_times* save_times(struct tms* time){
+	saved_times* new_times = malloc(sizeof(saved_times));
+	new_times->user = time->tms_utime;
+	new_times->real = times(time);
+	return new_times;
+}
+
+saved_times* calc_times_diff(saved_times* start_times, saved_times* stop_times){
+	saved_times* difference = malloc(sizeof(saved_times));
+	difference->user = (stop_times->user - start_times->user)/sysconf(_SC_CLK_TCK);
+	difference->real = (stop_times->real - start_times->real)/sysconf(_SC_CLK_TCK);
+	return difference;
+}
 
 char** create_empty_strings(int line_count, int line_len){
 	char** strings = calloc(line_count, sizeof(char*));
@@ -192,6 +212,10 @@ void sort(char* file_name, int line_count, int line_len, int use_f){
 }
 //TODO: errors of opening, reading, writing
 int main(int argc, char** argv){
+	struct tms* start = malloc(sizeof(struct tms));
+	struct tms* stop = malloc(sizeof(struct tms));
+
+	saved_times* start_times = save_times(start);
 	char* error_line = "Invalid number of arguments.";
 	if(argc < 5){
 		printf("%s\n", error_line);
@@ -217,9 +241,8 @@ int main(int argc, char** argv){
 			if (strcmp(mode, "sys")) use_f = 0;
 		}
 		generate(file_name, line_count, line_len, use_f);
-		exit(EXIT_SUCCESS);
 	}
-	if(strcmp(command, "sort") == 0){
+	else if(strcmp(command, "sort") == 0){
 		error_line = "Invalid arguments (expected: sort file_name line_count line_length sys/lib)";
 		if(argc < 6){
 			printf("%s\n", error_line);
@@ -235,10 +258,9 @@ int main(int argc, char** argv){
 
 		if(strcmp(mode, "sys") == 0) use_f = 0;
 		sort(file_name, line_count, line_len, use_f);
-		exit(EXIT_SUCCESS);
 	}
 
-	if(strcmp(command, "copy") == 0){
+	else if(strcmp(command, "copy") == 0){
 		error_line = "Invalid arguments (expected: copy file_name copy_name line_count line_length sys/lib)";
 		if(argc < 7){
 			printf("%s\n",error_line);
@@ -255,21 +277,20 @@ int main(int argc, char** argv){
 
 		if(strcmp(mode,"sys") == 0) use_f = 0;
 		copy(file_name, copy_name, line_count, line_len, use_f);
-		exit(EXIT_SUCCESS);
+	}
+	else{
+		error_line = "Invalid command";
+		printf("%s\n",error_line);
+		exit(EXIT_FAILURE);
 	}
 
-	error_line = "Invalid command";
-	printf("%s\n",error_line);
-	exit(EXIT_FAILURE);
+	saved_times* stop_times = save_times(stop);
+	saved_times* difference = calc_times_diff(start_times, stop_times);
 
-//	generate("dupa.txt", 5, 5, 0);
-//	copy("lol2","lol3",10,10,0);
-//	FILE* file = fopen("dupa.txt", "r+");
-//	swap_lines_lib(file,1,2,5);
-//	fclose(file);
-//	int fd = open("dupa.txt", O_RDWR);
-//	swap_lines_sys(fd, 1, 2, 5);
-//	close(fd);
-//	sort("dupa.txt", 5, 5, 0);
+	printf("REAL   -   USER\n");
+	printf("%f - %f\n", difference->real, difference->user);
+	exit(EXIT_SUCCESS);
+
+
 }
 
