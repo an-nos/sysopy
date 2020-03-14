@@ -7,7 +7,7 @@
 #include<sys/stat.h>
 #include<unistd.h>
 #define __USE_XOPEN_EXTENDED 1
-#include <ftw.h>
+#include<ftw.h>
 #include<limits.h>
 
 int max_depth = INT_MAX;
@@ -184,6 +184,5 @@ int main(int argc, char** argv){
 	else {
 		search_in_dir(directory_name, 1);
 	}
-
 
 }
