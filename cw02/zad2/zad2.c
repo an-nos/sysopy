@@ -123,7 +123,6 @@ static int nftw_step(const char* fpath, const struct stat* sb, int typeflag, str
 
 
 int main(int argc, char** argv){
-	printf("%d\n",argc);
 	char directory_name[256];
 	mtime_diff = atime_diff = 0;
 	int nftw_mode = 0;
