@@ -17,7 +17,8 @@ char asign, msign;
 
 void print_time(struct timespec time){
 	char time_str[100];
-	struct tm *times = localtime(&time);
+	time_t raw_time = (time_t) time.tv_sec;
+	struct tm *times = localtime(&raw_time);
 	strftime(time_str, 100*sizeof(char), "%c", times);
 	printf("%s\n",time_str);
 }
@@ -136,13 +137,13 @@ int main(int argc, char** argv){
 	if(strcmp(argv[1],"-name") != 0 ){
 		strcpy(directory_name, argv[1]);
 		shift = 1;
-	}
-	else {
-		strcpy(directory_name, ".");
-		if (strcmp(argv[1 + shift], "-name") != 0) {
+		if (strcmp(argv[2], "-name") != 0) {
 			printf("Missing -name (FILE_NAME must be preceded with -name)");
 			exit(EXIT_FAILURE);
 		}
+	}
+	else {
+		strcpy(directory_name, ".");
 	}
 	strcpy(file_name, argv[2 + shift]);
 	int i = 3 + shift;
