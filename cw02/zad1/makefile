@@ -9,13 +9,13 @@ main: zad1.c
 	$(CC) $(FLAGS) -o zad1 zad1.c
 
 test:
-	@make main
+	make main
 	./zad1 generate test $(LINES) $(LEN)
 	./zad1 copy test test_l $(LINES) $(LEN) lib
 	./zad1 copy test test_s $(LINES) $(LEN) sys
 	./zad1 sort test_l $(LINES) $(LEN) lib
 	./zad1 sort test_s $(LINES) $(LEN) sys
-	@make clean_all
+	make clean_all
 
 
 clean:
