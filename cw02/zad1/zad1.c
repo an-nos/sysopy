@@ -42,7 +42,7 @@ saved_times* save_times(struct tms* time){
 saved_times* calc_times_diff(saved_times* start_times, saved_times* stop_times){
 	saved_times* difference = malloc(sizeof(saved_times));
 	difference->user = (stop_times->user - start_times->user)/sysconf(_SC_CLK_TCK);
-	difference->system = (stop_times->system - start_times->system);//sysconf(_SC_CLK_TCK);
+	difference->system = (stop_times->system - start_times->system)/sysconf(_SC_CLK_TCK);
 	return difference;
 }
 
@@ -275,9 +275,17 @@ int main(int argc, char** argv){
 			exit(EXIT_FAILURE);
 		}
 
+		mode = "lib";
+
 		if(argc == 6){
+
 			mode = argv[5];
-			if (strcmp(mode, "sys")) use_f = 0;
+			if (strcmp(mode, "sys") == 0) use_f = 0;
+			else if(strcmp(mode, "lib") != 0){
+				printf("%s\n", error_line);
+				exit(EXIT_FAILURE);
+			}
+
 		}
 		generate(file_name, line_count, line_len, use_f);
 	}
@@ -289,6 +297,8 @@ int main(int argc, char** argv){
 		}
 		line_count = atoi(argv[3]);
 		line_len = atoi(argv[4]);
+
+
 		mode = argv[5];
 		if(line_count == 0 || line_len == 0 || (strcmp(mode, "sys") != 0 && strcmp(mode, "lib") != 0)){
 			printf("%s\n", error_line);
@@ -326,11 +336,10 @@ int main(int argc, char** argv){
 	saved_times* stop_times = save_times(stop);
 	saved_times* difference = calc_times_diff(start_times, stop_times);
 	printf("OPERATION: %s\n",command);
-	printf("MODE: %s\n",mode);
+	printf("MODE: %s\n", mode);
 	printf("LINES: %d\nLENGTH: %d\n", line_count, line_len);
 	printf("%-10s %-10s\n","SYS","USER");
-	printf("%-10f %-10f\n", difference->system, difference->user);
+	printf("%-10f %-10f\n\n", difference->system, difference->user);
 	exit(EXIT_SUCCESS);
 
 }
-

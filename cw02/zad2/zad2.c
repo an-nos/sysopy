@@ -23,9 +23,9 @@ void print_time(struct timespec time){
 }
 
 int correct_time(struct timespec time, int time_diff, char sign){
-	time_t now;
-	struct tm *curr_time = localtime(&now);
-	int diff = difftime(curr_time, time.tv_sec)/86400;
+	struct timespec spec;
+	clock_gettime(CLOCK_REALTIME, &spec);
+	int diff = (spec.tv_sec - time.tv_sec)/86400;
 	if((sign == '+' && diff>time_diff) ||
 		(sign == '-' && diff<time_diff) ||
 		(sign == '=' && diff==time_diff))
@@ -33,7 +33,7 @@ int correct_time(struct timespec time, int time_diff, char sign){
 	return 0;
 }
 
-int check_times(struct stat* stat){
+int check_times(const struct stat* stat){
 	if(atime_diff != 0 && correct_time(stat->st_atim, atime_diff, asign) == 0) return 0;
 	if(mtime_diff != 0 && correct_time(stat->st_mtim, mtime_diff, msign) == 0) return 0;
 	return 1;
@@ -43,7 +43,7 @@ void print_results(char* file_path){
 	struct stat file_stat;
 	if(stat(file_path, &file_stat) != 0) return;
 	printf("PATH: ");
-	if(file_path[0] != '/'){
+	if(file_path[0] != '/' && file_path[0] != '~'){
 		char path[PATH_MAX];
 		if(getcwd(path, sizeof(path)) != NULL){
 			strcat(path, file_path+1);
@@ -82,7 +82,7 @@ void print_results(char* file_path){
 }
 
 char* concat_name(char* path, char* curr){
-	char* new_path = calloc(strlen(path) + strlen(curr) + 1, sizeof(char));
+	char* new_path = calloc(strlen(path) + strlen(curr) + 2, sizeof(char));
 	strcpy(new_path, path);
 	strcat(new_path, "/");
 	strcat(new_path, curr);
@@ -93,14 +93,14 @@ void search_in_dir(char* dir_path, int depth){
 
 	DIR* dir;
 	dir = opendir(dir_path);
-	if( dir == NULL){
+	if(dir == NULL){
 		printf("Could not open directory");
 		exit(EXIT_FAILURE);
 	}
 	struct dirent* curr;
 	while((curr = readdir(dir))!= NULL){
 		struct stat buf;
-		char * new_path = concat_name(dir_path, curr->d_name);
+		char* new_path = concat_name(dir_path, curr->d_name);
 		if(lstat(new_path, &buf) != 0) continue;
 		if(strcmp(file_name, curr->d_name) == 0 && check_times(&buf) == 1){
 				print_results(new_path);
@@ -116,17 +116,17 @@ void search_in_dir(char* dir_path, int depth){
 static int nftw_step(const char* fpath, const struct stat* sb, int typeflag, struct FTW* ftwbuf){
 	if(ftwbuf->level > max_depth) return 1;
 	if(strcmp(fpath  + (strlen(fpath) - strlen(file_name)), file_name) == 0 && check_times(sb)){
-		print_results(fpath);
+		print_results((char*)fpath);
 	}
 	return 0;
 }
 
 
 int main(int argc, char** argv){
-	char directory_name[256];
+	char directory_name[100];
 	mtime_diff = atime_diff = 0;
 	int nftw_mode = 0;
-
+	strcpy(directory_name, "");
 	if(argc < 3){
 		printf("Too few arguments.\n Expected: [DIRECTORY_NAME] -name FILE_NAME [-mtime MTIME] [-atime ATIME] [-maxdepth DEPTH] [nftw/opendir]\n default: opendir");
 		exit(EXIT_FAILURE);
@@ -137,46 +137,47 @@ int main(int argc, char** argv){
 		strcpy(directory_name, argv[1]);
 		shift = 1;
 	}
-	else{
+	else {
 		strcpy(directory_name, ".");
-		if(strcmp(argv[1 + shift],"-name") != 0){
+		if (strcmp(argv[1 + shift], "-name") != 0) {
 			printf("Missing -name (FILE_NAME must be preceded with -name)");
 			exit(EXIT_FAILURE);
 		}
-		strcpy(file_name, argv[2+shift]);
-		int i = 3 + shift;
-		while(i<argc){
-			if(strcmp(argv[i], "-mtime") == 0){
-				if(mtime_diff != 0){
-					printf("Too many declarations of mtime.");
-					exit(EXIT_FAILURE);
-				}
-				i++;
-				if(argv[i][0] == '+' || argv[i][0] == '-') msign = argv[i][0];
-				else msign = '=';
-				mtime_diff = abs(atoi(argv[i]));
-			}
-			else if(strcmp(argv[i], "-atime") == 0){
-				if(atime_diff != 0){
-					printf("Too many declarations of atime.");
-					exit(EXIT_FAILURE);
-				}
-				i++;
-				if(argv[i][0] == '+' || argv[i][0] == '-') asign = argv[i][0];
-				else asign = '=';
-				atime_diff = abs(atoi(argv[i]));
-			}
-			else if(strcmp(argv[i], "-maxdepth") == 0){
-				max_depth = atoi(argv[++i]);
-				if(max_depth == 0){
-					printf("Invalid argument of max_depth. Must be at least 1.");
-					exit(EXIT_FAILURE);
-				}
-			}
-			else if(strcmp(argv[i], "nftw") == 0) nftw_mode = 1;
-			i++;
-		}
 	}
+	strcpy(file_name, argv[2 + shift]);
+	int i = 3 + shift;
+	while(i<argc){
+		if(strcmp(argv[i], "-mtime") == 0){
+			if(mtime_diff != 0){
+				printf("Too many declarations of mtime.");
+				exit(EXIT_FAILURE);
+			}
+			i++;
+			if(argv[i][0] == '+' || argv[i][0] == '-') msign = argv[i][0];
+			else msign = '=';
+			mtime_diff = abs(atoi(argv[i]));
+		}
+		else if(strcmp(argv[i], "-atime") == 0){
+			if(atime_diff != 0){
+				printf("Too many declarations of atime.");
+				exit(EXIT_FAILURE);
+			}
+			i++;
+			if(argv[i][0] == '+' || argv[i][0] == '-') asign = argv[i][0];
+			else asign = '=';
+			atime_diff = abs(atoi(argv[i]));
+		}
+		else if(strcmp(argv[i], "-maxdepth") == 0){
+			max_depth = atoi(argv[++i]);
+			if(max_depth == 0){
+				printf("Invalid argument of max_depth. Must be at least 1.");
+				exit(EXIT_FAILURE);
+			}
+		}
+		else if(strcmp(argv[i], "nftw") == 0) nftw_mode = 1;
+		i++;
+	}
+
 
 	if(nftw_mode == 1){
 		nftw(directory_name, nftw_step, 20, FTW_PHYS | FTW_DEPTH);
