@@ -165,8 +165,10 @@ list* read_list(char* file_name){
 	return m_list;
 }
 
-int multiply_1(list* m_list, int proc_idx, int proc_count){
-	struct tms* t_buff = malloc(sizeof(struct tms));
+int multiply_1(list* m_list, int proc_idx, int proc_count, int max_sec){
+	struct tms* start = malloc(sizeof(struct tms));
+	struct tms* stop = malloc(sizeof(struct tms));
+	double t_start=times(start);
 	int i;
 	for(i = 0; i<m_list->len; i++){
 		int cols_per_proc;
@@ -195,8 +197,10 @@ int multiply_1(list* m_list, int proc_idx, int proc_count){
 		fclose(a);
 		fclose(b);
 		fclose(f);
+		double t_stop = times(stop);
+		double t_elapsed = (t_stop - t_start)/sysconf(_SC_CLK_TCK);
+		if((int) t_elapsed >= max_sec) exit(i);
 	}
-
 	exit(i);
 }
 
@@ -216,11 +220,7 @@ char* create_file_chunk(list* m_list, int m_idx, int chunk_idx, int start_col, i
 	FILE* b = fopen(B->file_name,"r");
 
 	matrix* tmp = malloc(sizeof(matrix));
-//	char* file_name = calloc(FILENAME_MAX, sizeof(char));
-//	strcpy(file_name, m_list->Cs[m_idx]->file_name);
-//	char buff[100];
-//	snprintf(buff, 10, "%d", chunk_idx);
-//	strcat(file_name, buff);
+
 	char* file_name = get_file_name(m_list, m_idx, chunk_idx);
 	tmp = create_matrix(m_list->Cs[m_idx]->rows, cols_per_proc, file_name);
 	FILE* f = fopen(file_name, "r+");
@@ -320,8 +320,8 @@ int main(int argc, char** argv) {
 	for(int i = 0; i<proc_count; i++){
 		pid_t child_pid = fork();
 		if(child_pid == 0){
-//			multiply_1(m_list, i, proc_count);
-			multiply_2(m_list, i, proc_count);
+			multiply_1(m_list, i, proc_count, 1);
+//			multiply_2(m_list, i, proc_count);
 		}
 		else if (child_pid>0){
 			child_pids[i] = child_pid;
@@ -331,7 +331,7 @@ int main(int argc, char** argv) {
 		}
 	}
 
-	exec_paste(m_list, proc_per_m, proc_count);
+//	exec_paste(m_list, proc_per_m, proc_count);
 
 	printf("end\n");
 	return 0;
