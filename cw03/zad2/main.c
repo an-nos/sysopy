@@ -9,6 +9,7 @@
 #include <sys/times.h>
 #include <limits.h>
 
+enum mode{ NORMAL, PASTE };
 
 struct matrix{
 	char* file_name;
@@ -165,7 +166,42 @@ list* read_list(char* file_name){
 	return m_list;
 }
 
-int multiply_1(list* m_list, int proc_idx, int proc_count, int max_sec){
+char* get_file_name(list* m_list, int m_idx, int chunk_idx){
+	char* file_name = calloc(FILENAME_MAX, sizeof(char));
+	strcpy(file_name, m_list->Cs[m_idx]->file_name);
+	char buff[100];
+	snprintf(buff, 10, "%d", chunk_idx);
+	strcat(file_name, buff);
+	return file_name;
+}
+
+void create_file_chunk(list* m_list, int m_idx, int chunk_idx, int start_col, int cols_per_proc){
+	matrix* A = m_list->As[m_idx];
+	matrix* B = m_list->Bs[m_idx];
+	FILE* a = fopen(A->file_name, "r");
+	FILE* b = fopen(B->file_name,"r");
+
+	matrix* tmp = malloc(sizeof(matrix));
+
+	char* file_name = get_file_name(m_list, m_idx, chunk_idx);
+	tmp = create_matrix(m_list->Cs[m_idx]->rows, cols_per_proc, file_name);
+	FILE* f = fopen(file_name, "r+");
+
+	for (int i = 0; i<cols_per_proc; i++) {
+		for (int r = 0; r < A->rows; r++) {
+			int res = 0;
+			for (int c = 0; c < A->cols; c++) {
+				res += get_val_at(A, a, r, c) * get_val_at(B, b, c, start_col+i);
+			}
+			write_in_pos(tmp, f, r, i, res);
+		}
+	}
+	free(tmp);
+	fclose(f);
+	free(file_name);
+}
+
+int multiply(list* m_list, int proc_idx, int proc_count, int max_sec, enum mode mode){
 	struct tms* start = malloc(sizeof(struct tms));
 	struct tms* stop = malloc(sizeof(struct tms));
 	double t_start=times(start);
@@ -186,6 +222,8 @@ int multiply_1(list* m_list, int proc_idx, int proc_count, int max_sec){
 				cols_per_proc = rem;
 			}
 		}
+		if(mode == PASTE) create_file_chunk(m_list, i, proc_idx, start_col, cols_per_proc);
+		else{
 		FILE* f = fopen(m_list->Cs[i]->file_name, "r+");
 		FILE* a = fopen(m_list->As[i]->file_name, "r");
 		FILE* b = fopen(m_list->Bs[i]->file_name, "r");
@@ -197,70 +235,13 @@ int multiply_1(list* m_list, int proc_idx, int proc_count, int max_sec){
 		fclose(a);
 		fclose(b);
 		fclose(f);
+		}
+
 		double t_stop = times(stop);
 		double t_elapsed = (t_stop - t_start)/sysconf(_SC_CLK_TCK);
 		if((int) t_elapsed >= max_sec) exit(i);
 	}
 	exit(i);
-}
-
-char* get_file_name(list* m_list, int m_idx, int chunk_idx){
-	char* file_name = calloc(FILENAME_MAX, sizeof(char));
-	strcpy(file_name, m_list->Cs[m_idx]->file_name);
-	char buff[100];
-	snprintf(buff, 10, "%d", chunk_idx);
-	strcat(file_name, buff);
-	return file_name;
-}
-
-char* create_file_chunk(list* m_list, int m_idx, int chunk_idx, int start_col, int cols_per_proc){
-	matrix* A = m_list->As[m_idx];
-	matrix* B = m_list->Bs[m_idx];
-	FILE* a = fopen(A->file_name, "r");
-	FILE* b = fopen(B->file_name,"r");
-
-	matrix* tmp = malloc(sizeof(matrix));
-
-	char* file_name = get_file_name(m_list, m_idx, chunk_idx);
-	tmp = create_matrix(m_list->Cs[m_idx]->rows, cols_per_proc, file_name);
-	FILE* f = fopen(file_name, "r+");
-
-	for (int i = 0; i<cols_per_proc; i++) {
-		for (int r = 0; r < A->rows; r++) {
-			int res = 0;
-			for (int c = 0; c < A->cols; c++) {
-				res += get_val_at(A, a, r, c) * get_val_at(B, b, c, start_col+i);
-			}
-//			printf("write in pos r: %d, c: %d\n",r,i);
-			write_in_pos(tmp, f, r, i, res);
-		}
-	}
-	free(tmp);
-	close(f);
-	return file_name;
-}
-
-int multiply_2(list* m_list, int proc_idx, int proc_count) {
-	int i;
-	for (i = 0; i < m_list->len; i++) {
-		int cols_per_proc;
-		int start_col;
-		if (proc_idx >= m_list->Bs[i]->cols) continue;
-		if (proc_count > m_list->Bs[i]->cols) {
-			cols_per_proc = 1;
-			start_col = proc_idx;
-		} else {
-			cols_per_proc = m_list->Bs[i]->cols / proc_count;
-			start_col = cols_per_proc * proc_idx;
-			int rem = m_list->Bs[i]->cols - cols_per_proc * (proc_idx + 1);
-			if (rem != 0 && rem < cols_per_proc) {
-				cols_per_proc = rem;
-			}
-		}
-		create_file_chunk(m_list, i, proc_idx, start_col, cols_per_proc);
-//		printf("%s\n",files[i][proc_idx]);
-	}
-	exit(0);
 }
 
 void exec_paste(list* m_list, int* proc_per_m, int proc_count){
@@ -310,18 +291,32 @@ int* count_proc_per_m(list* m_list, int proc_count){
 	return proc_per_m;
 }
 
+void create_empty_files(list* m_list, int* proc_per_m){
+	for(int m_idx =0; m_idx<m_list->len; m_idx++){
+		for(int chunk_idx = 0; chunk_idx<proc_per_m[m_idx]; chunk_idx++){
+			char* file_name = get_file_name(m_list, m_idx, chunk_idx);
+			creat(file_name, 0666);
+			free(file_name);
+		}
+	}
+
+}
 
 int main(int argc, char** argv) {
 	list* m_list = read_list("lista");
 	int proc_count=2;
-	int* proc_per_m = count_proc_per_m(m_list, proc_count);
+	enum mode mode = PASTE;
+	int *proc_per_m = NULL;
+	if(mode == PASTE) {
+		proc_per_m = count_proc_per_m(m_list, proc_count);
+		create_empty_files(m_list, proc_per_m);
+	}
 
 	pid_t* child_pids = calloc(proc_count, sizeof(pid_t));
 	for(int i = 0; i<proc_count; i++){
 		pid_t child_pid = fork();
 		if(child_pid == 0){
-			multiply_1(m_list, i, proc_count, 1);
-//			multiply_2(m_list, i, proc_count);
+			multiply(m_list, i, proc_count, 1, mode);
 		}
 		else if (child_pid>0){
 			child_pids[i] = child_pid;
@@ -331,7 +326,7 @@ int main(int argc, char** argv) {
 		}
 	}
 
-//	exec_paste(m_list, proc_per_m, proc_count);
+	if(mode == PASTE) exec_paste(m_list, proc_per_m, proc_count);
 
 	printf("end\n");
 	return 0;
