@@ -209,12 +209,12 @@ char* create_proc_file(list* m_list, int m_idx, int file_idx, int proc_idx, int 
 	FILE* a = fopen(A->file_name, "r");
 	FILE* b = fopen(B->file_name,"r");
 
-//	matrix* tmp = malloc(sizeof(matrix));
+	matrix* tmp = malloc(sizeof(matrix));
 	strcpy(file_name, m_list->Cs[m_idx]->file_name);
 	char buff[100];
 	snprintf(buff, 10, "%d", file_idx);
 	strcat(file_name, buff);
-//	tmp = create_matrix(m_list->Cs[m_idx]->rows, cols_per_proc, file_name);
+	tmp = create_matrix(m_list->Cs[m_idx]->rows, cols_per_proc, file_name);
 	FILE* f = fopen(file_name, "r+");
 
 	for (int i = 0; i<cols_per_proc; i++) {
@@ -227,7 +227,7 @@ char* create_proc_file(list* m_list, int m_idx, int file_idx, int proc_idx, int 
 			write_in_pos(tmp, f, r, i, res);
 		}
 	}
-//	free(tmp);
+	free(tmp);
 	close(f);
 	return file_name;
 }
