@@ -206,6 +206,7 @@ int multiply(list* m_list, int proc_idx, int proc_count, int max_sec, enum mode 
 	struct tms* stop = malloc(sizeof(struct tms));
 	double t_start=times(start);
 	int i;
+	int m_counter = 0;
 	for(i = 0; i<m_list->len; i++){
 		int cols_per_proc;
 		int start_col;
@@ -236,12 +237,12 @@ int multiply(list* m_list, int proc_idx, int proc_count, int max_sec, enum mode 
 		fclose(b);
 		fclose(f);
 		}
-
+		m_counter++;
 		double t_stop = times(stop);
 		double t_elapsed = (t_stop - t_start)/sysconf(_SC_CLK_TCK);
-		if((int) t_elapsed >= max_sec) exit(i);
+		if((int) t_elapsed >= max_sec) exit(m_counter);
 	}
-	exit(i);
+	exit(m_counter);
 }
 
 void exec_paste(list* m_list, int* proc_per_m, int proc_count){
@@ -303,9 +304,29 @@ void create_empty_files(list* m_list, int* proc_per_m){
 }
 
 int main(int argc, char** argv) {
-	list* m_list = read_list("lista");
-	int proc_count=2;
-	enum mode mode = PASTE;
+
+	if(argc<5) {
+		printf("Invalid arguments. Expected: list_name num_of_processes max_proc_time NORMAL/PASTE\n");
+		exit(EXIT_FAILURE);
+	}
+
+	list* m_list = read_list(argv[1]);
+
+	int proc_count=atoi(argv[2]);
+	if(proc_count == 0){
+		printf("Invalid number of processes\n");
+		exit(EXIT_FAILURE);
+	}
+	int max_time = atoi(argv[3]);
+
+	enum mode mode;
+	if(strcmp("PASTE", argv[4]) == 0) mode=PASTE;
+	else if(strcmp("NORMAL", argv[4]) == 0) mode=NORMAL;
+	else{
+		printf("Invalid mode. Available modes: NORMAL, PASTE\n");
+		exit(EXIT_FAILURE);
+	}
+
 	int *proc_per_m = NULL;
 	if(mode == PASTE) {
 		proc_per_m = count_proc_per_m(m_list, proc_count);
@@ -316,7 +337,7 @@ int main(int argc, char** argv) {
 	for(int i = 0; i<proc_count; i++){
 		pid_t child_pid = fork();
 		if(child_pid == 0){
-			multiply(m_list, i, proc_count, 1, mode);
+			multiply(m_list, i, proc_count, max_time, mode);
 		}
 		else if (child_pid>0){
 			child_pids[i] = child_pid;
@@ -326,9 +347,15 @@ int main(int argc, char** argv) {
 		}
 	}
 
+	int* stat_loc = malloc(sizeof(int));
+	for(int i = 0; i<proc_count; i++){
+		waitpid(child_pids[i], stat_loc, 0);
+		printf("Process of PID %d multiplied %d fragment(s) of matrices\n", child_pids[i], WEXITSTATUS(*stat_loc));
+	}
+	free(stat_loc);
+
 	if(mode == PASTE) exec_paste(m_list, proc_per_m, proc_count);
 
-	printf("end\n");
 	return 0;
 
 }
