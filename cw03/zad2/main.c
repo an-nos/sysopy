@@ -112,7 +112,6 @@ matrix* read_matrix(char* file_name){
 
 void write_in_pos(matrix *M, FILE* f, int r, int c, int val){
 	rewind(f);
-	printf("in write\n");
 	int idx = get_idx(M, r, c);
 	char* num = calloc(M->chars_per_num, sizeof(char));
 	sprintf(num, "%d", val);
@@ -121,7 +120,6 @@ void write_in_pos(matrix *M, FILE* f, int r, int c, int val){
 	for(int i = digs; i<M->chars_per_num -1; i++){
 		num[i] = '#';
 	}
-//	strcat(num, "\n");
 	fseek(f, idx, 0);
 	fwrite(num, sizeof(char), M->chars_per_num-1, f);
 	free(num);
@@ -167,7 +165,7 @@ list* read_list(char* file_name){
 	return m_list;
 }
 
-int multiply(list* m_list, int proc_idx, int proc_count){
+int multiply_1(list* m_list, int proc_idx, int proc_count){
 	struct tms* t_buff = malloc(sizeof(struct tms));
 	int i;
 	for(i = 0; i<m_list->len; i++){
@@ -202,18 +200,28 @@ int multiply(list* m_list, int proc_idx, int proc_count){
 	exit(i);
 }
 
-char* create_proc_file(list* m_list, int m_idx, int file_idx, int proc_idx, int start_col, int cols_per_proc){
-	char file_name[FILENAME_MAX];
+char* get_file_name(list* m_list, int m_idx, int chunk_idx){
+	char* file_name = calloc(FILENAME_MAX, sizeof(char));
+	strcpy(file_name, m_list->Cs[m_idx]->file_name);
+	char buff[100];
+	snprintf(buff, 10, "%d", chunk_idx);
+	strcat(file_name, buff);
+	return file_name;
+}
+
+char* create_file_chunk(list* m_list, int m_idx, int chunk_idx, int start_col, int cols_per_proc){
 	matrix* A = m_list->As[m_idx];
 	matrix* B = m_list->Bs[m_idx];
 	FILE* a = fopen(A->file_name, "r");
 	FILE* b = fopen(B->file_name,"r");
 
 	matrix* tmp = malloc(sizeof(matrix));
-	strcpy(file_name, m_list->Cs[m_idx]->file_name);
-	char buff[100];
-	snprintf(buff, 10, "%d", file_idx);
-	strcat(file_name, buff);
+//	char* file_name = calloc(FILENAME_MAX, sizeof(char));
+//	strcpy(file_name, m_list->Cs[m_idx]->file_name);
+//	char buff[100];
+//	snprintf(buff, 10, "%d", chunk_idx);
+//	strcat(file_name, buff);
+	char* file_name = get_file_name(m_list, m_idx, chunk_idx);
 	tmp = create_matrix(m_list->Cs[m_idx]->rows, cols_per_proc, file_name);
 	FILE* f = fopen(file_name, "r+");
 
@@ -223,7 +231,7 @@ char* create_proc_file(list* m_list, int m_idx, int file_idx, int proc_idx, int 
 			for (int c = 0; c < A->cols; c++) {
 				res += get_val_at(A, a, r, c) * get_val_at(B, b, c, start_col+i);
 			}
-			printf("write in pos r: %d, c: %d\n",r,i);
+//			printf("write in pos r: %d, c: %d\n",r,i);
 			write_in_pos(tmp, f, r, i, res);
 		}
 	}
@@ -232,25 +240,99 @@ char* create_proc_file(list* m_list, int m_idx, int file_idx, int proc_idx, int 
 	return file_name;
 }
 
+int multiply_2(list* m_list, int proc_idx, int proc_count) {
+	int i;
+	for (i = 0; i < m_list->len; i++) {
+		int cols_per_proc;
+		int start_col;
+		if (proc_idx >= m_list->Bs[i]->cols) continue;
+		if (proc_count > m_list->Bs[i]->cols) {
+			cols_per_proc = 1;
+			start_col = proc_idx;
+		} else {
+			cols_per_proc = m_list->Bs[i]->cols / proc_count;
+			start_col = cols_per_proc * proc_idx;
+			int rem = m_list->Bs[i]->cols - cols_per_proc * (proc_idx + 1);
+			if (rem != 0 && rem < cols_per_proc) {
+				cols_per_proc = rem;
+			}
+		}
+		create_file_chunk(m_list, i, proc_idx, start_col, cols_per_proc);
+//		printf("%s\n",files[i][proc_idx]);
+	}
+	exit(0);
+}
+
+void exec_paste(list* m_list, int* proc_per_m, int proc_count){
+	for(int i =0; i<proc_count; i++) wait(0);
+
+	for(int i = 0; i<m_list->len; i++){
+		char** arg = calloc(proc_per_m[i]+2, sizeof(char*));
+		arg[0] = (char*) calloc(6, sizeof(char));
+		strcpy(arg[0], "paste");
+		for(int j=0; j<proc_per_m[i]; j++){
+			arg[j+1] = calloc(FILENAME_MAX, sizeof(char));
+			strcpy(arg[j+1], get_file_name(m_list, i, j));
+		}
+		arg[proc_per_m[i]+1]=NULL;
+		pid_t child_pid = fork();
+		if(child_pid == 0){
+			int fd = open(m_list->Cs[i]->file_name, O_WRONLY | O_CREAT | O_TRUNC, 0666);
+			dup2(fd, 1);
+			close(fd);
+			execvp("paste", arg);
+			strcpy(arg[0], "rm");
+		}
+		else{
+			wait(0);
+		}
+		pid_t child_pid2 = fork();
+		if(child_pid2 == 0){
+			strcpy(arg[0], "rm");
+			execvp("rm", arg);
+		}
+		else{
+			wait(0);
+		}
+		for(int j=0; j<proc_per_m[i]+1; j++) free(arg[j]);
+	}
+}
+
+int* count_proc_per_m(list* m_list, int proc_count){
+	int* proc_per_m = calloc(m_list->len, sizeof(int));
+
+	for(int i = 0; i<m_list->len; i++){
+		int cols = m_list->Bs[i]->cols;
+		if(cols>=proc_count) proc_per_m[i] = proc_count;
+		else proc_per_m[i] = cols;
+	}
+
+	return proc_per_m;
+}
 
 
 int main(int argc, char** argv) {
 	list* m_list = read_list("lista");
-//	create_proc_file(m_list, 0, 0, 0, 0, 2);
-//	int proc_count=2;
-//	pid_t* child_pids = calloc(proc_count, sizeof(pid_t));
-//	for(int i =0; i<proc_count; i++){
-//		pid_t child_pid = fork();
-//		if(child_pid == 0){
-//			multiply(m_list, i, proc_count);
-//		}
-//		else if (child_pid>0){
-//			child_pids[i] = child_pid;
-//		}
-//		else{
-//			exit(EXIT_FAILURE);
-//		}
-//	}
+	int proc_count=2;
+	int* proc_per_m = count_proc_per_m(m_list, proc_count);
+
+	pid_t* child_pids = calloc(proc_count, sizeof(pid_t));
+	for(int i = 0; i<proc_count; i++){
+		pid_t child_pid = fork();
+		if(child_pid == 0){
+//			multiply_1(m_list, i, proc_count);
+			multiply_2(m_list, i, proc_count);
+		}
+		else if (child_pid>0){
+			child_pids[i] = child_pid;
+		}
+		else{
+			exit(EXIT_FAILURE);
+		}
+	}
+
+	exec_paste(m_list, proc_per_m, proc_count);
+
 	printf("end\n");
 	return 0;
 
