@@ -15,7 +15,7 @@ test:
 	./zad1 copy test test_s $(LINES) $(LEN) sys
 	./zad1 sort test_l $(LINES) $(LEN) lib
 	./zad1 sort test_s $(LINES) $(LEN) sys
-	make clean_all
+# 	make clean_all
 
 
 clean:

@@ -338,7 +338,7 @@ int main(int argc, char** argv){
 	printf("OPERATION: %s\n",command);
 	printf("MODE: %s\n", mode);
 	printf("LINES: %d\nLENGTH: %d\n", line_count, line_len);
-	printf("%-10s %-10s\n","SYS","USER");
+	printf("%-10s %-10s\n" "SYS" "USER");
 	printf("%-10f %-10f\n\n", difference->system, difference->user);
 	exit(EXIT_SUCCESS);
 

@@ -334,3 +334,6 @@ LENGTH: 8192
 SYS        USER      
 7.140000   1.680000  
 
+Przy jednym znaku w linii sortowanie szybciej odbywalo sie dla uzycia funkcji biblioteki C. Jednak juz
+przy dlugosci rekordu 4 szybsze okazaly sie funkcje systemowe. Dla wiekszych dlugosci rekordow i linii
+roznica ta jest coraz bardziej widoczna.
