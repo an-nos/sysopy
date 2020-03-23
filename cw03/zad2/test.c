@@ -127,29 +127,80 @@ void save_list(list* m_list){
 	fclose(f);
 }
 
-matrix* read_matrix(int idx){
-	FILE* f = fopen(create_name("C", idx), "r");
+matrix* read_matrix(int idx) {
+	matrix* M = malloc(sizeof(matrix));
+	M->name = create_name("C", idx);
+	FILE *f = fopen(M->name, "r");
+	char input[1024];
+	char* val;
+	char delimit[] = " \t\n";
+	int rows = 1;
+	int cols = 1;
+	if(fgets(input, sizeof input, f)){
+		strtok(input, delimit);
+		while (strtok(NULL, delimit) != NULL) cols++;
+	}
+	while (fgets(input, sizeof input, f)) rows++;
+	rewind(f);
 
+	M->rows = rows;
+	M->cols = cols;
+	M->arr = calloc(rows, sizeof(int*));
+	for(int r = 0; r<rows; r++) M->arr[r] = calloc(cols, sizeof(int));
+	int r = 0;
+
+	while (fgets(input, sizeof input, f)) {
+		int c = 0;
+		val = strtok(input, delimit);
+		M->arr[r][c] = atoi(val);
+		while (val != NULL && c<cols) {
+			M->arr[r][c] = atoi(val);
+			val = strtok(NULL, delimit);
+			c++;
+		}
+		r++;
+	}
+	fclose(f);
+	return M;
+}
+
+int compare_matrices(matrix* A, matrix* B){
+	if(A->rows != B->rows || A->cols != B->cols) {
+		printf("invalid sizes\n");
+		return 0;
+	}
+	for(int r = 0; r<A->rows; r++){
+		for(int c = 0; c<A->cols; c++){
+			if(A->arr[r][c] != B->arr[r][c]) return 0;
+		}
+	}
+	return 1;
+}
+
+void delete_matrix(matrix* M){
+	for(int r = 0; r<M->rows; r++) free(M->arr[r]);
+	free(M->arr);
+	free(M->name);
+	free(M);
 }
 
 int main(int argc, char** argv) {
-//	if(argc<4){
-//		printf("Invalid arguments. Expected: matrices_num min max\n");
-//		exit(EXIT_FAILURE);
-//	}
+	if(argc<4){
+		printf("Invalid arguments. Expected: matrices_num min max\n");
+		exit(EXIT_FAILURE);
+	}
 	int m_num = 3;
 	int min = 1;
 	int max = 5;
 	srand(time(0));
 
-//
-//	m_num = atoi(argv[1]);
-//	min = atoi(argv[2]);
-//	max = atoi(argv[3]);
-//	if(m_num == 0 || min == 0 || max == 0){
-//		printf("Invalid argument. Expected: matrices_num min max.\n");
-//		exit(EXIT_FAILURE);
-//	}
+	m_num = atoi(argv[1]);
+	min = atoi(argv[2]);
+	max = atoi(argv[3]);
+	if(m_num == 0 || min == 0 || max == 0){
+		printf("Invalid argument. Expected: matrices_num min max.\n");
+		exit(EXIT_FAILURE);
+	}
 	list* m_list = malloc(sizeof(list));
 	m_list->len = m_num;
 	m_list->As = calloc(m_num, sizeof(matrix*));
@@ -176,8 +227,30 @@ int main(int argc, char** argv) {
 		multiply(A, B, C);
 	}
 
+	char command_p[FILENAME_MAX];
+	strcpy(command_p, "./main ");
+	strcat(command_p, "lista ");
+	strcat(command_p, "5 ");
+	strcat(command_p, "1000 ");
+	strcat(command_p, "NORMAL");
+	system(command_p);
 
+	for(int i = 0; i<m_list->len; i++){
+		matrix* C = read_matrix(i);
+		if(compare_matrices(m_list->Cs[i], C) == 0){
+			printf("not equal");
+		}
+
+		delete_matrix(C);
+		delete_matrix(m_list->Cs[i]);
+		delete_matrix(m_list->As[i]);
+		delete_matrix(m_list->Bs[i]);
+	}
+
+	free(m_list->As);
+	free(m_list->Bs);
+	free(m_list->Cs);
+	free(m_list);
 
 }
 
-//TODO: reading Cs, checking equality

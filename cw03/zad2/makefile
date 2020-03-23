@@ -12,3 +12,9 @@ test: test.c
 clean:
 	rm -f main
 	rm -f test
+
+clean_all:
+	make clean
+	rm -f A*
+	rm -f B*
+	rm -f C*

@@ -37,7 +37,7 @@ void count_rows(matrix* M) {
 	FILE* f = fopen(M->file_name, "r");
 	char str[FILENAME_MAX];
 	int i = 0;
-	while(fgets(str, FILENAME_MAX, f) != NULL) i++;
+	while(fgets(str, sizeof str, f) != NULL) i++;
 	M->rows = i;
 	fclose(f);
 }
@@ -207,7 +207,7 @@ int multiply(list* m_list, int proc_idx, int proc_count, int max_sec, enum mode 
 	int i;
 	int m_counter = 0;
 	for(i = 0; i<m_list->len; i++){
-		int cols_per_proc;
+		int cols_per_proc = 1;
 		int start_col;
 		if(proc_idx>=m_list->Bs[i]->cols) continue;
 		if(proc_count > m_list->Bs[i]->cols){
@@ -217,9 +217,9 @@ int multiply(list* m_list, int proc_idx, int proc_count, int max_sec, enum mode 
 		else{
 			cols_per_proc = m_list->Bs[i]->cols/proc_count;
 			start_col = cols_per_proc*proc_idx;
-			int rem = m_list->Bs[i]->cols - cols_per_proc*(proc_idx + 1);
-			if(rem != 0 && rem < cols_per_proc){
-				cols_per_proc = rem;
+			if(proc_idx == proc_count -1){
+				int rem = m_list->Bs[i]->cols - cols_per_proc*(proc_idx+1);
+				cols_per_proc += rem;
 			}
 		}
 		if(mode == PASTE) create_file_chunk(m_list, i, proc_idx, start_col, cols_per_proc);
