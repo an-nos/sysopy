@@ -7,7 +7,6 @@
 #include <sys/wait.h>
 #include <sys/types.h>
 #include <sys/times.h>
-#include <limits.h>
 
 enum mode{ NORMAL, PASTE };
 
@@ -78,7 +77,7 @@ int get_val_at(matrix* M, FILE* f, int r, int c){
 }
 
 void fill_file(FILE* f, int rows, int len){
-	char* space = "#";
+	char* space = " ";
 	char* endl = "\n";
 	for(int j =0; j<rows; j++){
 		for(int i = 0; i<len - 1; i++) {
@@ -119,7 +118,7 @@ void write_in_pos(matrix *M, FILE* f, int r, int c, int val){
 	int digs =floor(log10(abs(val))) + 1;
 	if(val < 0) digs++;
 	for(int i = digs; i<M->chars_per_num -1; i++){
-		num[i] = '#';
+		num[i] = ' ';
 	}
 	fseek(f, idx, 0);
 	fwrite(num, sizeof(char), M->chars_per_num-1, f);
