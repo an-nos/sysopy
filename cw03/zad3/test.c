@@ -4,7 +4,7 @@
 #include<time.h>
 #include<string.h>
 
-#define MAX_ROW_LEN 1000000
+#define MAX_ROW_LEN 10000
 #define MAX_NUM_LEN 6
 
 struct matrix{
@@ -227,21 +227,21 @@ int main(int argc, char** argv) {
 		multiply(A, B, C);
 	}
 
-	char command_p[FILENAME_MAX];
-	strcpy(command_p, "./main ");
-	strcat(command_p, "lista ");
-	strcat(command_p, "7 ");
-	strcat(command_p, "10000 ");
-	strcat(command_p, "NORMAL");
-	system(command_p);
+//	char command_p[FILENAME_MAX];
+//	strcpy(command_p, "./main ");
+//	strcat(command_p, "lista ");
+//	strcat(command_p, "5 ");
+//	strcat(command_p, "1000 ");
+//	strcat(command_p, "NORMAL");
+//	system(command_p);
 
 	for(int i = 0; i<m_list->len; i++){
-		matrix* C = read_matrix(i);
-		if(compare_matrices(m_list->Cs[i], C) == 0){
-			printf("not equal");
-		}
-
-		delete_matrix(C);
+//		matrix* C = read_matrix(i);
+//		if(compare_matrices(m_list->Cs[i], C) == 0){
+//			printf("not equal");
+//		}
+//
+//		delete_matrix(C);
 		delete_matrix(m_list->Cs[i]);
 		delete_matrix(m_list->As[i]);
 		delete_matrix(m_list->Bs[i]);

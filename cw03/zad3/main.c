@@ -7,6 +7,8 @@
 #include <sys/wait.h>
 #include <sys/types.h>
 #include <sys/times.h>
+#include <sys/time.h>
+#include <sys/resource.h>
 
 enum mode{ NORMAL, PASTE };
 
@@ -27,7 +29,7 @@ struct list{
 
 #define MIN_VAL 100
 #define MAX_VAL 100
-#define MAX_ROW_LEN 1000000
+#define MAX_ROW_LEN 1000
 
 int get_idx(matrix* M, int r, int c){
 	return M->chars_per_num*M->cols*r + c*M->chars_per_num;
@@ -200,12 +202,12 @@ void create_file_chunk(list* m_list, int m_idx, int chunk_idx, int start_col, in
 	free(file_name);
 }
 
-int multiply(list* m_list, int proc_idx, int proc_count, int max_sec, enum mode mode){
+void multiply(list* m_list, int proc_idx, int proc_count, int max_sec, enum mode mode, int *m_counter){
 	struct tms* start = malloc(sizeof(struct tms));
 	struct tms* stop = malloc(sizeof(struct tms));
 	double t_start=times(start);
 	int i;
-	int m_counter = 0;
+	(*m_counter) = 0;
 	for(i = 0; i<m_list->len; i++){
 		int cols_per_proc = 1;
 		int start_col;
@@ -236,12 +238,12 @@ int multiply(list* m_list, int proc_idx, int proc_count, int max_sec, enum mode 
 		fclose(b);
 		fclose(f);
 		}
-		m_counter++;
+		(*m_counter)++;
 		double t_stop = times(stop);
 		double t_elapsed = (t_stop - t_start)/sysconf(_SC_CLK_TCK);
-		if((int) t_elapsed >= max_sec) exit(m_counter);
+		if((int) t_elapsed >= max_sec) return;
 	}
-	exit(m_counter);
+	return;
 }
 
 void exec_paste(list* m_list, int* proc_per_m, int proc_count){
@@ -304,8 +306,8 @@ void create_empty_files(list* m_list, int* proc_per_m){
 
 int main(int argc, char** argv) {
 
-	if(argc<5) {
-		printf("Invalid arguments. Expected: list_name num_of_processes max_proc_time NORMAL/PASTE\n");
+	if(argc<7) {
+		printf("Invalid arguments. Expected: list_name num_of_processes max_proc_time NORMAL/PASTE hard_time hard_mem\n");
 		exit(EXIT_FAILURE);
 	}
 
@@ -332,11 +334,34 @@ int main(int argc, char** argv) {
 		create_empty_files(m_list, proc_per_m);
 	}
 
+	int hard_time = atoi(argv[5]);
+	int hard_mem = atoi(argv[6]);
+
+	if(hard_time == 0 || hard_mem == 0){
+		printf("Invalid arguments. 2 last values should be: hard_time hard_mem\n");
+		exit(EXIT_FAILURE);
+	}
+
 	pid_t* child_pids = calloc(proc_count, sizeof(pid_t));
 	for(int i = 0; i<proc_count; i++){
 		pid_t child_pid = fork();
 		if(child_pid == 0){
-			multiply(m_list, i, proc_count, max_time, mode);
+			int m_counter;
+			struct rlimit* time_limit = malloc(sizeof(struct rlimit));
+			time_limit->rlim_cur = hard_time;
+			time_limit->rlim_max = hard_time;
+			setrlimit(RLIMIT_CPU, time_limit);
+
+			struct rlimit* mem_limit = malloc(sizeof(struct rlimit));
+			mem_limit->rlim_cur = hard_mem * (1<<20);
+			mem_limit->rlim_max = hard_mem * (1<<20);
+			setrlimit(RLIMIT_AS, mem_limit);
+
+			multiply(m_list, i, proc_count, max_time, mode, &m_counter);
+			free(time_limit);
+			free(mem_limit);
+
+			exit(m_counter);
 		}
 		else if (child_pid>0){
 			child_pids[i] = child_pid;
@@ -349,12 +374,25 @@ int main(int argc, char** argv) {
 	if(mode == PASTE) exec_paste(m_list, proc_per_m, proc_count);
 
 	int* stat_loc = malloc(sizeof(int));
+	struct rusage* usage = malloc(sizeof(struct rusage));
+
 	for(int i = 0; i<proc_count; i++){
+
 		waitpid(child_pids[i], stat_loc, 0);
 		printf("Process of PID %d multiplied %d fragment(s) of matrices\n", child_pids[i], WEXITSTATUS(*stat_loc));
+
+		if(getrusage(child_pids[i], usage) == RUSAGE_CHILDREN){
+
+			double utime = usage->ru_utime.tv_sec + 0.000001f * usage->ru_utime.tv_usec;
+			double stime = usage->ru_stime.tv_sec + 0.000001f * usage->ru_stime.tv_usec;
+
+			printf("TIMES: User %f\tSystem %f\n", utime, stime);
+		}
 	}
 
 	free(stat_loc);
+	free(usage);
+
 	return 0;
 
 }
