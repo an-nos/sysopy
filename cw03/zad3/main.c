@@ -241,8 +241,14 @@ void multiply(list* m_list, int proc_idx, int proc_count, int max_sec, enum mode
 		(*m_counter)++;
 		double t_stop = times(stop);
 		double t_elapsed = (t_stop - t_start)/sysconf(_SC_CLK_TCK);
-		if((int) t_elapsed >= max_sec) return;
+		if((int) t_elapsed >= max_sec){
+			free(start);
+			free(stop);
+			return;
+		}
 	}
+	free(start);
+	free(stop);
 	return;
 }
 
@@ -302,6 +308,24 @@ void create_empty_files(list* m_list, int* proc_per_m){
 		}
 	}
 
+}
+
+void delete_matrix(matrix* M){
+	free(M->file_name);
+	free(M);
+}
+
+void delete_list(list* m_list){
+	for(int i = 0; i< m_list->len; i++){
+		delete_matrix(m_list->As[i]);
+		delete_matrix(m_list->Bs[i]);
+		delete_matrix(m_list->Cs[i]);
+	}
+
+	free(m_list->As);
+	free(m_list->Bs);
+	free(m_list->Cs);
+	free(m_list);
 }
 
 int main(int argc, char** argv) {
@@ -392,7 +416,7 @@ int main(int argc, char** argv) {
 
 	free(stat_loc);
 	free(usage);
-
+	delete_list(m_list);
 	return 0;
 
 }

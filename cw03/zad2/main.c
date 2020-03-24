@@ -87,6 +87,11 @@ void fill_file(FILE* f, int rows, int len){
 	}
 }
 
+void delete_matrix(matrix* M){
+	free(M->file_name);
+	free(M);
+}
+
 matrix* create_matrix(int rows, int cols, char* file_name){
 	matrix* C = malloc(sizeof(matrix));
 	C->file_name = calloc(FILENAME_MAX, sizeof(char));
@@ -195,7 +200,7 @@ void create_file_chunk(list* m_list, int m_idx, int chunk_idx, int start_col, in
 			write_in_pos(tmp, f, r, i, res);
 		}
 	}
-	free(tmp);
+	delete_matrix(tmp);
 	fclose(f);
 	free(file_name);
 }
@@ -308,6 +313,21 @@ void create_empty_files(list* m_list, int* proc_per_m){
 
 }
 
+
+
+void delete_list(list* m_list){
+	for(int i = 0; i< m_list->len; i++){
+		delete_matrix(m_list->As[i]);
+		delete_matrix(m_list->Bs[i]);
+		delete_matrix(m_list->Cs[i]);
+	}
+
+	free(m_list->As);
+	free(m_list->Bs);
+	free(m_list->Cs);
+	free(m_list);
+}
+
 int main(int argc, char** argv) {
 
 	if(argc<5) {
@@ -359,6 +379,9 @@ int main(int argc, char** argv) {
 		waitpid(child_pids[i], stat_loc, 0);
 		printf("Process of PID %d multiplied %d fragment(s) of matrices\n", child_pids[i], WEXITSTATUS(*stat_loc));
 	}
+
+
+	delete_list(m_list);
 
 	free(stat_loc);
 	return 0;
