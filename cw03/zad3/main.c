@@ -27,7 +27,7 @@ struct list{
 	int len;
 }; typedef struct list list;
 
-#define MIN_VAL 100
+#define MIN_VAL -100
 #define MAX_VAL 100
 #define MAX_ROW_LEN 1000
 
@@ -89,6 +89,11 @@ void fill_file(FILE* f, int rows, int len){
 	}
 }
 
+void delete_matrix(matrix* M){
+	free(M->file_name);
+	free(M);
+}
+
 matrix* create_matrix(int rows, int cols, char* file_name){
 	matrix* C = malloc(sizeof(matrix));
 	C->file_name = calloc(FILENAME_MAX, sizeof(char));
@@ -96,7 +101,7 @@ matrix* create_matrix(int rows, int cols, char* file_name){
 	C->rows = rows;
 	C->cols = cols;
 	FILE* f = fopen(C->file_name, "w+");
-	C->chars_per_num = (int) log10(MAX_VAL*MIN_VAL) + 3;	//+1 for sign, +1 because log100=2, +1 for a space after
+	C->chars_per_num = (int) log10(abs(MAX_VAL*MIN_VAL)) + 3;	//+1 for sign, +1 because log100=2, +1 for a space after
 	int r_len = C->chars_per_num*C->cols;
 	fill_file(f, C->rows, r_len);
 	fclose(f);
@@ -115,15 +120,14 @@ matrix* read_matrix(char* file_name){
 void write_in_pos(matrix *M, FILE* f, int r, int c, int val){
 	rewind(f);
 	int idx = get_idx(M, r, c);
-	char* num = calloc(M->chars_per_num, sizeof(char));
+	char* num = (char*) calloc(M->chars_per_num, sizeof(char));
 	sprintf(num, "%d", val);
-	int digs =floor(log10(abs(val))) + 1;
-	if(val < 0) digs++;
-	for(int i = digs; i<M->chars_per_num -1; i++){
-		num[i] = ' ';
-	}
+	int j = M->chars_per_num-1;
+	while(num[j]==0) num[j--] = ' ';
 	fseek(f, idx, 0);
-	fwrite(num, sizeof(char), M->chars_per_num-1, f);
+	if(fwrite(num, sizeof(char), M->chars_per_num-1, f) < M->chars_per_num-1){
+		printf("error in writing");
+	}
 	free(num);
 }
 
@@ -224,27 +228,27 @@ void multiply(list* m_list, int proc_idx, int proc_count, int max_sec, enum mode
 				cols_per_proc += rem;
 			}
 		}
+
 		if(mode == PASTE) create_file_chunk(m_list, i, proc_idx, start_col, cols_per_proc);
 		else{
-		FILE* f = fopen(m_list->Cs[i]->file_name, "r+");
-		FILE* a = fopen(m_list->As[i]->file_name, "r");
-		FILE* b = fopen(m_list->Bs[i]->file_name, "r");
-		flock(fileno(f), LOCK_EX);
-		for(int c = start_col; c < start_col+cols_per_proc; c++){
-			multiply_col(m_list->As[i], m_list->Bs[i], m_list->Cs[i], a, b, f, c);
-		}
-		flock(fileno(f), LOCK_UN);
-		fclose(a);
-		fclose(b);
-		fclose(f);
+			FILE* f = fopen(m_list->Cs[i]->file_name, "r+");
+			FILE* a = fopen(m_list->As[i]->file_name, "r");
+			FILE* b = fopen(m_list->Bs[i]->file_name, "r");
+			flock(fileno(f), LOCK_EX);
+			for(int c = start_col; c < start_col+cols_per_proc; c++){
+				multiply_col(m_list->As[i], m_list->Bs[i], m_list->Cs[i], a, b, f, c);
+			}
+			flock(fileno(f), LOCK_UN);
+			fclose(a);
+			fclose(b);
+			fclose(f);
 		}
 		(*m_counter)++;
 		double t_stop = times(stop);
 		double t_elapsed = (t_stop - t_start)/sysconf(_SC_CLK_TCK);
 		if((int) t_elapsed >= max_sec){
-			free(start);
-			free(stop);
-			return;
+			printf("time's up\n");
+			break;
 		}
 	}
 	free(start);
@@ -308,11 +312,6 @@ void create_empty_files(list* m_list, int* proc_per_m){
 		}
 	}
 
-}
-
-void delete_matrix(matrix* M){
-	free(M->file_name);
-	free(M);
 }
 
 void delete_list(list* m_list){
