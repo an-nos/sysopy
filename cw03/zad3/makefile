@@ -18,3 +18,4 @@ clean_all:
 	rm -f A*
 	rm -f B*
 	rm -f C*
+	rm -f lista

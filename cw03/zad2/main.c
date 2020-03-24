@@ -27,7 +27,7 @@ struct list{
 
 #define MIN_VAL 100
 #define MAX_VAL 100
-#define MAX_ROW_LEN 1000000
+#define MAX_ROW_LEN 100000
 
 int get_idx(matrix* M, int r, int c){
 	return M->chars_per_num*M->cols*r + c*M->chars_per_num;
@@ -239,8 +239,14 @@ int multiply(list* m_list, int proc_idx, int proc_count, int max_sec, enum mode 
 		m_counter++;
 		double t_stop = times(stop);
 		double t_elapsed = (t_stop - t_start)/sysconf(_SC_CLK_TCK);
-		if((int) t_elapsed >= max_sec) exit(m_counter);
+		if((int) t_elapsed >= max_sec){
+			free(start);
+			free(stop);
+			exit(m_counter);
+		}
 	}
+	free(start);
+	free(stop);
 	exit(m_counter);
 }
 

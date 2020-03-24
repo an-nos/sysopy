@@ -110,8 +110,8 @@ void save_to_file(matrix* M){
 
 }
 
-void save_list(list* m_list){
-	FILE* f = fopen("lista", "w+");
+void save_list(list* m_list, char* file_name){
+	FILE* f = fopen(file_name, "w+");
 	char line[MAX_ROW_LEN];
 	for(int i = 0; i<m_list->len; i++){
 		strcpy(line, "");
@@ -184,6 +184,18 @@ void delete_matrix(matrix* M){
 	free(M);
 }
 
+void exec_main(char* file_name, char* proc_num, char* max_time, char* mode){
+	char command_p[FILENAME_MAX];
+
+	strcpy(command_p, "./main ");
+	strcat(command_p, file_name);
+	strcat(command_p, proc_num);
+	strcat(command_p, max_time);
+	strcat(command_p, mode);
+	printf("MODE: %s\n", mode);
+	system(command_p);
+}
+
 int main(int argc, char** argv) {
 	if(argc<4){
 		printf("Invalid arguments. Expected: matrices_num min max\n");
@@ -218,7 +230,9 @@ int main(int argc, char** argv) {
 		m_list->Cs[i] = create_matrix(create_name("C", i), A->rows, B->cols, 1);
 	}
 
-	save_list(m_list);
+	char* file_name = "lista";
+
+	save_list(m_list, file_name);
 
 	for(int i = 0; i <m_list->len; i++){
 		matrix* A = m_list->As[i];
@@ -227,20 +241,28 @@ int main(int argc, char** argv) {
 		multiply(A, B, C);
 	}
 
-	char command_p[FILENAME_MAX];
-	strcpy(command_p, "./main ");
-	strcat(command_p, "lista ");
-	strcat(command_p, "7 ");
-	strcat(command_p, "10000 ");
-	strcat(command_p, "NORMAL");
-	system(command_p);
+	char* proc_num = " 7 ";
+	char* max_time = "100000 ";
+
+	exec_main(file_name, proc_num, max_time, "NORMAL");
+
 
 	for(int i = 0; i<m_list->len; i++){
 		matrix* C = read_matrix(i);
 		if(compare_matrices(m_list->Cs[i], C) == 0){
-			printf("not equal");
+			printf("not equal\n");
 		}
+		delete_matrix(C);
+	}
 
+	exec_main(file_name, proc_num, max_time, "PASTE");
+
+
+	for(int i = 0; i<m_list->len; i++){
+		matrix* C = read_matrix(i);
+		if(compare_matrices(m_list->Cs[i], C) == 0){
+			printf("not equal\n");
+		}
 		delete_matrix(C);
 		delete_matrix(m_list->Cs[i]);
 		delete_matrix(m_list->As[i]);
