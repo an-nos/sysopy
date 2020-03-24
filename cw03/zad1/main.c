@@ -1,14 +1,14 @@
-#include<stdlib.h>
-#include<stdio.h>
-#include<string.h>
-#include<dirent.h>
-#include<time.h>
-#include<sys/types.h>
-#include<sys/stat.h>
-#include<unistd.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include <dirent.h>
+#include <time.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
 #define __USE_XOPEN_EXTENDED 1
-#include<ftw.h>
-#include<limits.h>
+#include <ftw.h>
+#include <limits.h>
 #include <sys/wait.h>
 
 char file_name[256];

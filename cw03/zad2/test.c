@@ -31,6 +31,7 @@ char* create_name(char* beg, int idx) {
 }
 
 void delete_matrix(matrix* M){
+	if(M == NULL) return;
 	for(int r = 0; r<M->rows; r++) free(M->arr[r]);
 	free(M->arr);
 	free(M->name);
@@ -160,6 +161,12 @@ matrix* read_matrix(int idx) {
 		int c = 0;
 		val = strtok(input, delimit);
 		M->arr[r][c] = atoi(val);
+		if(val == NULL){
+			for(int r = 0; r<rows; r++) free(M->arr[r]);
+			free(M->arr);
+			free(M);
+			return NULL;
+		}
 		while (val != NULL && c<cols) {
 			M->arr[r][c] = atoi(val);
 			val = strtok(NULL, delimit);
@@ -172,11 +179,10 @@ matrix* read_matrix(int idx) {
 }
 
 int compare_matrices(matrix* A, matrix* B){
+	if(A == NULL || B == NULL) return 0;
 	if(A->rows != B->rows || A->cols != B->cols) {
 		printf("invalid sizes\n");
 		printf("Cols: %d\tCols: %d\n", A->cols, B->cols);
-//		print_array(A->arr, A->rows, A->cols);
-//		print_array(B->arr, B->rows, B->cols);
 		return 0;
 	}
 	for(int r = 0; r<A->rows; r++){

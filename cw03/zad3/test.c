@@ -152,6 +152,12 @@ matrix* read_matrix(int idx) {
 	while (fgets(input, sizeof input, f)) {
 		int c = 0;
 		val = strtok(input, delimit);
+		if(val == NULL){
+			for(int r = 0; r<rows; r++) free(M->arr[r]);
+			free(M->arr);
+			free(M);
+			return NULL;
+		}
 		M->arr[r][c] = atoi(val);
 		while (val != NULL && c<cols) {
 			M->arr[r][c] = atoi(val);
@@ -165,6 +171,7 @@ matrix* read_matrix(int idx) {
 }
 
 int compare_matrices(matrix* A, matrix* B){
+	if(A == NULL || B == NULL) return 0;
 	if(A->rows != B->rows || A->cols != B->cols) {
 		printf("invalid sizes\n");
 		return 0;
@@ -178,10 +185,26 @@ int compare_matrices(matrix* A, matrix* B){
 }
 
 void delete_matrix(matrix* M){
+	if(M == NULL) return;
 	for(int r = 0; r<M->rows; r++) free(M->arr[r]);
 	free(M->arr);
 	free(M->name);
 	free(M);
+}
+
+void exec_main(char* file_name, char* proc_num, char* max_time, char* mode, char* hard_time, char* hard_mem){
+	char command_p[FILENAME_MAX];
+
+	strcpy(command_p, "./main ");
+	strcat(command_p, file_name);
+	strcat(command_p, proc_num);
+	strcat(command_p, max_time);
+	strcat(command_p, mode);
+	printf("MODE: %s\n", mode);
+	strcat(command_p, hard_time);
+	strcat(command_p, hard_mem);
+	system(command_p);
+
 }
 
 int main(int argc, char** argv) {
@@ -227,21 +250,15 @@ int main(int argc, char** argv) {
 		multiply(A, B, C);
 	}
 
-//	char command_p[FILENAME_MAX];
-//	strcpy(command_p, "./main ");
-//	strcat(command_p, "lista ");
-//	strcat(command_p, "5 ");
-//	strcat(command_p, "1000 ");
-//	strcat(command_p, "NORMAL");
-//	system(command_p);
+	exec_main("lista ", "3 ", "10 ", "NORMAL ","1 ","1");
 
 	for(int i = 0; i<m_list->len; i++){
-//		matrix* C = read_matrix(i);
-//		if(compare_matrices(m_list->Cs[i], C) == 0){
-//			printf("not equal");
-//		}
-//
-//		delete_matrix(C);
+		matrix* C = read_matrix(i);
+		if(compare_matrices(m_list->Cs[i], C) == 0){
+			printf("not equal\n");
+		}
+
+		delete_matrix(C);
 		delete_matrix(m_list->Cs[i]);
 		delete_matrix(m_list->As[i]);
 		delete_matrix(m_list->Bs[i]);

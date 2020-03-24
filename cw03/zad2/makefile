@@ -10,10 +10,10 @@ comp_test: test.c
 	$(CC) $(FLAGS) test.c -lm -o test
 
 test:
-	@make main
-	@make comp_test
-	@./test 20 20 30
-	@make clean_all
+	make main
+	make comp_test
+	./test 20 20 30
+	make clean_all
 
 clean:
 	rm -f main
@@ -28,21 +28,3 @@ clean_files:
 	rm -f B*
 	rm -f C*
 	rm -f lista
-
-@make wchuj:
-	@make test
-	@make clean_all
-	@make test
-	@make clean_all
-	@make test
-	@make clean_all
-	@make test
-	@make clean_all
-	@make test
-	@make clean_all
-	@make test
-	@make clean_all
-	@make test
-	@make clean_all
-	@make test
-	@make clean_all
