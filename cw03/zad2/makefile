@@ -1,5 +1,5 @@
 CC = gcc
-FLAGS = -Wall
+FLAGS = -Wall -ggdb3
 
 all: main
 
@@ -10,10 +10,10 @@ comp_test: test.c
 	$(CC) $(FLAGS) test.c -lm -o test
 
 test:
-	make main
-	make comp_test
-	./test 10 20 30
-	make clean_all
+	@make main
+	@make comp_test
+	@./test 20 20 30
+	@make clean_all
 
 clean:
 	rm -f main
@@ -29,14 +29,20 @@ clean_files:
 	rm -f C*
 	rm -f lista
 
-make wchuj:
-	make test
-	make test
-	make test
-	make test
-	make test
-	make test
-	make test
-	make test
-	make test
-	make test
+@make wchuj:
+	@make test
+	@make clean_all
+	@make test
+	@make clean_all
+	@make test
+	@make clean_all
+	@make test
+	@make clean_all
+	@make test
+	@make clean_all
+	@make test
+	@make clean_all
+	@make test
+	@make clean_all
+	@make test
+	@make clean_all

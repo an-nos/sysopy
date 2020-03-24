@@ -30,6 +30,13 @@ char* create_name(char* beg, int idx) {
 	return name;
 }
 
+void delete_matrix(matrix* M){
+	for(int r = 0; r<M->rows; r++) free(M->arr[r]);
+	free(M->arr);
+	free(M->name);
+	free(M);
+}
+
 void print_names(char** names, int m_num) {
 	for (int i = 0; i < m_num; i++) {
 		printf("%s\n",names[i]);
@@ -167,6 +174,9 @@ matrix* read_matrix(int idx) {
 int compare_matrices(matrix* A, matrix* B){
 	if(A->rows != B->rows || A->cols != B->cols) {
 		printf("invalid sizes\n");
+		printf("Cols: %d\tCols: %d\n", A->cols, B->cols);
+//		print_array(A->arr, A->rows, A->cols);
+//		print_array(B->arr, B->rows, B->cols);
 		return 0;
 	}
 	for(int r = 0; r<A->rows; r++){
@@ -177,12 +187,7 @@ int compare_matrices(matrix* A, matrix* B){
 	return 1;
 }
 
-void delete_matrix(matrix* M){
-	for(int r = 0; r<M->rows; r++) free(M->arr[r]);
-	free(M->arr);
-	free(M->name);
-	free(M);
-}
+
 
 void exec_main(char* file_name, char* proc_num, char* max_time, char* mode){
 	char command_p[FILENAME_MAX];
@@ -194,6 +199,7 @@ void exec_main(char* file_name, char* proc_num, char* max_time, char* mode){
 	strcat(command_p, mode);
 	printf("MODE: %s\n", mode);
 	system(command_p);
+
 }
 
 int main(int argc, char** argv) {
@@ -250,7 +256,7 @@ int main(int argc, char** argv) {
 	for(int i = 0; i<m_list->len; i++){
 		matrix* C = read_matrix(i);
 		if(compare_matrices(m_list->Cs[i], C) == 0){
-			printf("not equal\n");
+			printf("not equal at i %d\n", i);
 		}
 		delete_matrix(C);
 	}
@@ -262,6 +268,8 @@ int main(int argc, char** argv) {
 		matrix* C = read_matrix(i);
 		if(compare_matrices(m_list->Cs[i], C) == 0){
 			printf("not equal\n");
+			printf("not equal at i %d\n", i);
+
 		}
 		delete_matrix(C);
 		delete_matrix(m_list->Cs[i]);
