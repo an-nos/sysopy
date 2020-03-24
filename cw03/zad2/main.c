@@ -215,20 +215,19 @@ void multiply(list* m_list, int proc_idx, int proc_count, int max_sec, enum mode
 		int cols_per_proc = 1;
 		int start_col;
 		if(proc_idx>=m_list->Bs[i]->cols) continue;
-//		if(proc_count > m_list->Bs[i]->cols){
-//			cols_per_proc=1;
-//			start_col=proc_idx;
-//		}
-//		else{
-//			cols_per_proc = m_list->Bs[i]->cols/proc_count;
-//			start_col = cols_per_proc*proc_idx;
-//			if(proc_idx == proc_count -1){
-//				int rem = m_list->Bs[i]->cols - cols_per_proc*(proc_idx+1);
-//				cols_per_proc += rem;
-//			}
-//		}
-		start_col = proc_idx * ceil((double) m_list->Bs[i]->cols/proc_count);
-		cols_per_proc = fmin((proc_idx + 1) * (int) ceil((double) m_list->Bs[i]->cols / proc_count), m_list->Bs[i]->cols) - start_col;
+		if(proc_count > m_list->Bs[i]->cols){
+			cols_per_proc=1;
+			start_col=proc_idx;
+		}
+		else{
+			cols_per_proc = m_list->Bs[i]->cols/proc_count;
+			start_col = cols_per_proc*proc_idx;
+			if(proc_idx == proc_count -1){
+				int rem = m_list->Bs[i]->cols - cols_per_proc*(proc_idx+1);
+				cols_per_proc += rem;
+			}
+		}
+
 		if(mode == PASTE) create_file_chunk(m_list, i, proc_idx, start_col, cols_per_proc);
 		else{
 		FILE* f = fopen(m_list->Cs[i]->file_name, "r+");
@@ -372,8 +371,7 @@ int main(int argc, char** argv) {
 			exit(EXIT_FAILURE);
 		}
 	}
-//	int num_of_fragments;
-//			multiply(m_list, 0, 1, max_time, mode, &num_of_fragments);
+
 
 	int* stat_loc = malloc(sizeof(int));
 	for(int i = 0; i<proc_count; i++){
@@ -386,7 +384,7 @@ int main(int argc, char** argv) {
 
 	delete_list(m_list);
 
-//	free(stat_loc);
+	free(stat_loc);
 	return 0;
 
 }
