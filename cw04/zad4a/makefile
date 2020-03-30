@@ -3,8 +3,10 @@ FLAGS = -Wall
 
 all: main
 
-main: main.c
-	$(CC) $(FLAGS) -o main main.c
+main: catcher.c sender.c
+	$(CC) $(FLAGS) -o catcher catcher.c
+	$(CC) $(FLAGS) -o sender sender.c
 
 clean:
-	rm -f main
+	rm -f catcher
+	rm -f sender
