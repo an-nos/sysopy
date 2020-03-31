@@ -7,11 +7,11 @@
 #include <time.h>
 #include <stdint.h>
 
-void action_alarm(int sig, siginfo_t* info, void* ucontext){
+void action_queue(int sig, siginfo_t* info, void* ucontext){
 	printf("Alarm\n");
 	printf("Signal number %d\n", info->si_signo);
 	printf("Sending PID %d\n", info->si_pid);
-	printf("Timer id %d\n", info->si_overrun);
+	printf("Received value %d\n", info->si_int);
 	exit(EXIT_SUCCESS);
 
 }
@@ -35,7 +35,7 @@ void action_segfault(int sig, siginfo_t* info, void* ucontext){
 int main(int argc, char** argv){
 
 	if(argc < 2){
-		printf("Wrong arguments. Expected: alarm/child/segfault\n");
+		printf("Wrong arguments. Expected: queue/child/segfault\n");
 		exit(EXIT_FAILURE);
 	}
 
@@ -43,18 +43,19 @@ int main(int argc, char** argv){
 	s_action.sa_flags = SA_SIGINFO;
 	sigemptyset(&s_action.sa_mask);
 
-	if(strcmp(argv[1], "alarm") == 0){
-		s_action.sa_sigaction = action_alarm;
-		sigaction(SIGALRM, &s_action, NULL);
-		alarm(2);
-		int i = 0;
-		while(1){
-			i++;
-		}
+	if(strcmp(argv[1], "queue") == 0){
+		s_action.sa_sigaction = action_queue;
+		sigaction(SIGUSR1, &s_action, NULL);
+
+		union sigval sigval;
+		sigval.sival_int = 13;
+		sigqueue(getpid(), SIGUSR1, sigval);
+
 	}
 	else if(strcmp(argv[1], "child") == 0){
 		s_action.sa_sigaction = action_child;
 		sigaction(SIGCHLD, &s_action, NULL);
+
 		pid_t child_pid = fork();
 		if(child_pid == 0){
 			exit(42);
@@ -64,8 +65,13 @@ int main(int argc, char** argv){
 	else if(strcmp(argv[1],"segfault") == 0){
 		s_action.sa_sigaction = action_segfault;
 		sigaction(SIGSEGV, &s_action, NULL);
+
 		int* x = NULL;
 		x[21] = 37;
+	}
+	else{
+		printf("Invalid arguments. Expected: queue/child/segfault\n");
+		exit(EXIT_FAILURE);
 	}
 
 	exit(EXIT_SUCCESS);

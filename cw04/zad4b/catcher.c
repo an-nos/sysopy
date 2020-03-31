@@ -10,28 +10,39 @@ int catching = 1;
 pid_t sender_pid;
 int sig_1 = SIGUSR1;
 int sig_2 = SIGUSR2;
-
+int is_sigqueue = 0;
 
 void sigusr_action(int sig, siginfo_t* info, void* ucontext){
 	if(sig == sig_1){
 		counter++;
+		sender_pid = info->si_pid;
 	}
 	else if(sig == sig_2){
 		catching = 0;
-		sender_pid = info->si_pid;
 	}
+
+	if(is_sigqueue){
+		union sigval sigval;
+		sigval.sival_int = counter;
+		sigqueue(sender_pid, sig, sigval);
+	}
+	else kill(sender_pid, sig);
 }
 
 int main(int argc, char** argv){
 
-	if(argc < 2  || (strcmp(argv[1],"kill") !=0 && strcmp(argv[1], "sigqueue") != 0 && strcmp(argv[1], "sigrt") != 0)){
+	if(argc < 2){
 		printf("Invalid arguments. Expected: kill/sigqueue/sigrt\n");
 		exit(EXIT_FAILURE);
 	}
 
+
 	if(strcmp(argv[1], "sigrt") == 0){
 		sig_1 = SIGRTMIN;
 		sig_2 = SIGRTMIN+1;
+	}
+	else if(strcmp(argv[1], "sigqueue") == 0){
+		is_sigqueue = 1;
 	}
 
 	printf("Catcher PID %d\n",getpid());
@@ -73,7 +84,6 @@ int main(int argc, char** argv){
 
 
 	printf("Received %d signals in catcher\n",counter);
-
 
 	exit(EXIT_SUCCESS);
 

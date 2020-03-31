@@ -12,9 +12,10 @@ void handler(int proc_no){
 int main(int argc, char** argv){
 
 	if(argc<3){
-		printf("Invalid arguments.\n");
+		printf("Invalid arguments. Expected: ignore/handler/mask/pending fork/exec\n");
 		exit(EXIT_FAILURE);
 	}
+
 
 	if(strcmp(argv[1], "ignore") == 0){
 		signal(SIGUSR1, SIG_IGN);
@@ -27,6 +28,10 @@ int main(int argc, char** argv){
 		sigemptyset(&mask);
 		sigaddset(&mask, SIGUSR1);
 		sigprocmask(SIG_BLOCK, &mask, NULL);
+	}
+	else{
+		printf("Invalid arguments. Expected: ignore/handler/mask/pending fork/exec\n");
+		exit(EXIT_FAILURE);
 	}
 
 	raise(SIGUSR1);
@@ -63,6 +68,10 @@ int main(int argc, char** argv){
 	}
 	else if(strcmp(argv[2], "exec") == 0 && strcmp(argv[1], "handler") != 0){
 		execl("./exec_test", "./exec_test", argv[1], NULL);
+	}
+	else{
+		printf("Invalid arguments. Expected: ignore/handler/mask/pending fork/exec\n");
+		exit(EXIT_FAILURE);
 	}
 
 
