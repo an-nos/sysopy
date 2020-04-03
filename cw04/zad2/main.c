@@ -11,8 +11,8 @@ void handler(int proc_no){
 
 int main(int argc, char** argv){
 
-	if(argc<3){
-		printf("Invalid arguments. Expected: ignore/handler/mask/pending fork/exec\n");
+	if(argc<3 || (strcmp(argv[1], "handler") == 0 && strcmp(argv[2], "exec") == 0)){
+		printf("Invalid arguments. Expected: ignore/handler/mask/pending fork/exec (do not combine handler exec)\n");
 		exit(EXIT_FAILURE);
 	}
 

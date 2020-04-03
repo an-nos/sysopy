@@ -31,7 +31,7 @@ void sigusr_action(int sig, siginfo_t* info, void* ucontext){
 
 int main(int argc, char** argv){
 
-	if(argc < 2){
+	if(argc < 2  || (strcmp(argv[1],"kill") !=0 && strcmp(argv[1], "sigqueue") != 0 && strcmp(argv[1], "sigrt") != 0)){
 		printf("Invalid arguments. Expected: kill/sigqueue/sigrt\n");
 		exit(EXIT_FAILURE);
 	}
@@ -54,6 +54,7 @@ int main(int argc, char** argv){
 	sigfillset(&action.sa_mask);
 	sigdelset(&action.sa_mask, sig_1);
 	sigdelset(&action.sa_mask, sig_2);
+
 
 	action.sa_sigaction = sigusr_action;
 

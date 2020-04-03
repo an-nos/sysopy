@@ -17,11 +17,13 @@ void sigint_handler(int sing_no){
 }
 
 int main(int arg, char** argv){
+
 	struct sigaction sigtstp_action;
 	sigtstp_action.sa_handler = sigtstp_handler;
 	sigemptyset(&sigtstp_action.sa_mask);
 	sigtstp_action.sa_flags = 0;
 	sigaction(SIGTSTP, &sigtstp_action, NULL);
+
 	signal(SIGINT, sigint_handler);
 	while(1){
 		if(is_waiting == 0) system("ls");

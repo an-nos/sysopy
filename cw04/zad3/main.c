@@ -4,11 +4,10 @@
 #include <signal.h>
 #include <string.h>
 #include <sys/wait.h>
-#include <time.h>
-#include <stdint.h>
+
 
 void action_queue(int sig, siginfo_t* info, void* ucontext){
-	printf("Alarm\n");
+	printf("Received signal via sigqueue\n");
 	printf("Signal number %d\n", info->si_signo);
 	printf("Sending PID %d\n", info->si_pid);
 	printf("Received value %d\n", info->si_int);

@@ -15,6 +15,8 @@ int sig_2 = SIGUSR2;
 void sigusr_action(int sig, siginfo_t* info, void* ucontext){
 	if(sig == sig_1){
 		counter++;
+		sender_pid = info->si_pid;
+
 	}
 	else if(sig == sig_2){
 		catching = 0;
@@ -54,6 +56,8 @@ int main(int argc, char** argv){
 	while(catching){
 		usleep(1);
 	}
+
+	printf("PID %d\n", sender_pid);
 
 	if(strcmp(argv[1], "sigqueue") == 0){
 		union sigval sigval;

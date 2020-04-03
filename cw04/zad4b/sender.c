@@ -6,7 +6,6 @@
 #include <sys/wait.h>
 
 int received = 0;
-int catching = 0;
 int sig_1 = SIGUSR1;
 int sig_2 = SIGUSR2;
 int is_sigqueue = 0;
@@ -23,8 +22,6 @@ void sigusr_action(int sig, siginfo_t* info, void* ucontext){
 	}
 	else if(sig == sig_2){
 
-		catching = 0;
-
 		printf("Received %d signals in sender, expected %d signals\n", received, counter);
 		if(is_sigqueue) printf("Last received signal: %d\n", last_received);
 		exit(EXIT_SUCCESS);
@@ -34,7 +31,7 @@ void sigusr_action(int sig, siginfo_t* info, void* ucontext){
 
 int main(int argc, char** argv){
 
-	if(argc<4){
+	if(argc<4 || (strcmp(argv[3], "kill") != 0 && strcmp(argv[3], "sigqueue") != 0 && strcmp(argv[3], "sigrt") != 0 )){
 		printf("Invalid arguments. Expected: catcher_pid sig_count kill/sigqueue/sigrt");
 		exit(EXIT_FAILURE);
 	}
@@ -43,6 +40,11 @@ int main(int argc, char** argv){
 	pid_t catcher_pid = atoi(argv[1]);
 
 	counter = atoi(argv[2]);
+
+	if(catcher_pid == 0 || counter == 0){
+		printf("Invalid arguments. Expected: catcher_pid sig_count kill/sigqueue/sigrt");
+		exit(EXIT_FAILURE);
+	}
 
 	if(strcmp(argv[3], "sigrt") == 0){
 		sig_1 = SIGRTMIN;
@@ -56,6 +58,7 @@ int main(int argc, char** argv){
 	sigfillset(&action.sa_mask);
 	sigdelset(&action.sa_mask, sig_1);
 	sigdelset(&action.sa_mask, sig_2);
+
 
 	action.sa_sigaction = sigusr_action;
 
@@ -82,16 +85,14 @@ int main(int argc, char** argv){
 		for(int i = 0; i<counter; i++){
 			kill(catcher_pid, sig_1);
 			while(!received_response){
-				usleep(1);
+				pause();
 			}
 			received_response = 0;
 		}
-		while(!received_response) usleep(1);
 		kill(catcher_pid, sig_2);
 	}
 
-	catching = 1;
-	while(catching){
+	while(1){
 		usleep(1);
 	}
 
