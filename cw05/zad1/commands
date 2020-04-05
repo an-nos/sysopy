@@ -1,0 +1,3 @@
+ls -l | wc
+ls -l | wc
+ls -l | wc
