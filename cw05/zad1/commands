@@ -1,3 +1,4 @@
 ls -l | wc
 ls -l | wc
 ls -l | wc
+ps aux | grep "grep"

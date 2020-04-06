@@ -1,15 +1,16 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/types.h>
-#include <sys/stat.h>
 #include <unistd.h>
-#include <wait.h>
 #include <time.h>
 
 #define MAX_LINE_LEN 100
 
 int main(int argc, char** argv) {
+	if(argc<4){
+		printf("Invalid arguments. Expected: pipe_name file_name characters_per_write\n");
+		exit(EXIT_FAILURE);
+	}
 	char *pipe_path = argv[1];
 	char *file_path = argv[2];
 	int chars_per_write = atoi(argv[3]);
@@ -19,6 +20,11 @@ int main(int argc, char** argv) {
 	FILE* pipe = fopen(pipe_path, "w");
 
 	FILE* file = fopen(file_path, "r");
+
+	if(pipe == NULL || file == NULL){
+		printf("fopen failed\n");
+		exit(EXIT_FAILURE);
+	}
 
 	char buffer[MAX_LINE_LEN];
 	char line[MAX_LINE_LEN];
@@ -32,9 +38,9 @@ int main(int argc, char** argv) {
 		sleep(seconds);
 		strcpy(line, pid_str);
 		strcat(line, buffer);
-		printf("%s", line);
+		int len = strlen(buffer) + chars_per_write;
 
-		fwrite(line, sizeof(char), strlen(line), pipe);
+		fwrite(line, sizeof(char), len, pipe);
 	}
 
 	fclose(pipe);
