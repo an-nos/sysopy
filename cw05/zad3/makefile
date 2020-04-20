@@ -7,6 +7,11 @@ main: main.c producer.c consumer.c
 	$(CC) $(FLAGS) -o main main.c
 	$(CC) $(FLAGS) -o producer producer.c
 	$(CC) $(FLAGS) -o consumer consumer.c
+
+test:
+	make main
+	./main
+
 clean:
 	rm -f main
 	rm -f producer

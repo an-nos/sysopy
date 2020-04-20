@@ -1,4 +1,4 @@
 ls -l | wc
-ls -l | wc
-ls -l | wc
+ls -l | sort
 ps aux | grep "grep"
+ps aux | head | wc

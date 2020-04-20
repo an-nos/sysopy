@@ -11,9 +11,9 @@
 
 void generate_file(char* file_name, int i){
 	FILE* f = fopen(file_name, "w+");
-	int lines = random()%5+5;
+	int lines = random()%4+3;
 	char character = 'a' + i;
-	int chars_per_line = random()%4+2;
+	int chars_per_line = random()%3+1;
 	for(int j = 0; j < lines; j++){
 		for(int k = 0; k < chars_per_line; k++){
 			fwrite(&character, sizeof(char), 1, f);
@@ -26,7 +26,10 @@ void generate_file(char* file_name, int i){
 
 int main(int argc, char** argv){
 	char* fifo_name = "pipe";
-	mkfifo(fifo_name, 0666);
+	if(mkfifo(fifo_name, 0666)<0){
+		printf("Could not create a named pipe.");
+		exit(EXIT_FAILURE);
+	}
 
 	pid_t pids[6];
 
@@ -49,8 +52,6 @@ int main(int argc, char** argv){
 		if(pids[i-1] == 0){
 			execl("./producer", "./producer", fifo_name, file_name, numbers_of_chars[i-1], NULL);
 		}
-		printf("producer executed\n");
-
 	}
 
 
@@ -58,7 +59,6 @@ int main(int argc, char** argv){
 	if(pids[5] == 0){
 		execl("./consumer", "./consumer", fifo_name, "cons1", "5", NULL);
 	}
-	printf("consumer executed\n");
 
 
 	for(int i = 0; i<7; i++){
