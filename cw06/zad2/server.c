@@ -8,7 +8,7 @@
 #include "common.h"
 
 
-struct client{	//id of client is its
+struct client{	//id of client is its index
 	char name[NAME_LEN];
 	mqd_t queue;
 	int chatting_id;
@@ -32,7 +32,7 @@ void sigint_handler(int sig_number){
 }
 
 void exit_function(){
-	printf("\n=== IN EXIT FUNCTION ===\n");
+	printf("\n=== EXIT ===\n");
 	char message[MAX_MSG_SIZE];
 	strcpy(message, "");
 	unsigned int priority = STOP;
@@ -66,9 +66,10 @@ void exit_function(){
 }
 
 void handle_stop(char* message){
-
 	char* ptr;
 	int id = strtol(message, &ptr, 10);
+
+	printf("=== STOP ID %d ===\n", id);
 
 	if(mq_close(clients[id].queue) == -1){
 		printf("Could not close client queue. Error: %s\n", strerror(errno));
@@ -80,7 +81,7 @@ void handle_stop(char* message){
 }
 
 void handle_init(char* message, int priority){
-	printf("=== IN HANDLE INIT FUNCTION ===\n");
+	printf("=== INIT ===\n");
 
 	int id = get_first_free();
 	if(id < 0){
@@ -109,7 +110,7 @@ void handle_list(char* message){
 
 	char* ptr;
 	int id = strtol(message, &ptr, 10);
-	printf("=== IN HANDLE LIST FUNCTION ID %d ===\n", id);
+	printf("=== LIST FOR ID %d ===\n", id);
 
 	char text_buf[MAX_MSG_SIZE];
 	char message_buf[MAX_MSG_SIZE];
@@ -127,7 +128,7 @@ void handle_list(char* message){
 		strcat(message_buf, text_buf);
 	}
 
-	printf("%s\n", message_buf);
+//	printf("%s\n", message_buf);
 
 	if(mq_send(clients[id].queue, message_buf, sizeof message_buf, LIST) == -1){
 		printf("Could not send LIST reply to client. Error: %s\n", strerror(errno));
@@ -136,7 +137,6 @@ void handle_list(char* message){
 }
 
 void connect(int id1, int id2){
-
 	char message[MAX_MSG_SIZE];
 
 	strcpy(message, clients[id2].name);
@@ -152,12 +152,11 @@ void connect(int id1, int id2){
 }
 
 void handle_connect(char* message){
-
 	int id1 = atoi(strtok(message, " "));
 	int id2 = atoi(strtok(NULL, " "));
 
 	printf("id1 = %d, id2 = %d\n", id1, id2);
-
+	printf("=== CONNECT %d TO %d ===\n", id1, id2);
 	if(id1 == id2 || clients[id1].chatting_id != -1 || clients[id2].chatting_id != -1){
 		printf("Invalid connection\n");
 		char message[MAX_MSG_SIZE];
@@ -173,6 +172,7 @@ void handle_connect(char* message){
 }
 
 void disconnect(int id){
+	printf("=== DISCONECT %d ===\n", id);
 
 	char message[MAX_MSG_SIZE];
 	strcpy(message,"");
@@ -221,8 +221,6 @@ int main(int argc, char** argv){
 		exit(EXIT_FAILURE);
 	}
 
-
-
 	printf("Server initialized\n");
 
 	char message_buf[MAX_MSG_SIZE];
@@ -237,23 +235,18 @@ int main(int argc, char** argv){
 
 		switch(priority){
 			case STOP:
-				printf("=== RECEIVED STOP ===\n");
 				handle_stop(message_buf);
 				break;
 			case DISCONNECT:
-				printf("=== RECEIVED DISCONNECT ===\n");
 				handle_disconnect(message_buf);
 				break;
 			case LIST:
-				printf("=== RECEIVED LIST ===\n");
 				handle_list(message_buf);
 				break;
 			case CONNECT:
-				printf("=== RECEIVED CONNECT ===\n");
 				handle_connect(message_buf);
 				break;
 			case INIT:
-				printf("=== RECEIVED INIT ===\n");
 				handle_init(message_buf, priority);
 				break;
 		}
