@@ -27,6 +27,8 @@ void delete_queue(){
 		printf("Failed deleting client queue\n");
 		exit(EXIT_FAILURE);
 	}
+	printf("Client queue deleted successfully\n");
+	c_queue_id = -1;
 
 }
 
@@ -57,37 +59,39 @@ void disconnect(){
 
 void stop(){
 
-	if(chatting_queue_id != -1){
-		printf("Disconnecting...\n");
+	if (chatting_queue_id != -1) {
+		printf("\nDisconnecting...\n");
 		disconnect();
 	}
 
-	msgbuf stop_msg;
-	stop_msg.mtype = STOP;
-	stop_msg.sender_id = client_id;
 
-	if(msgsnd(s_queue_id, &stop_msg, msgbuf_size, 0) == -1){
-		printf("Could not send stop message\n");
-		delete_queue();
-		exit(EXIT_FAILURE);
+	if(s_queue_id != -1) {
+
+		msgbuf stop_msg;
+		stop_msg.mtype = STOP;
+		stop_msg.sender_id = client_id;
+
+		if (msgsnd(s_queue_id, &stop_msg, msgbuf_size, 0) == -1) {
+			printf("Could not send stop message\n");
+			delete_queue();
+			exit(EXIT_FAILURE);
+		}
+
+		if (msgrcv(c_queue_id, &stop_msg, msgbuf_size, 0, 0) == -1 || stop_msg.mtype != STOP) {
+			printf("Failed receiving STOP message from server\n");
+			delete_queue();
+			exit(EXIT_FAILURE);
+		}
+
+		printf("Succesfully deleted from server.\n");
 	}
-
-	if(msgrcv(c_queue_id, &stop_msg, msgbuf_size, 0, 0) == -1 || stop_msg.mtype != STOP){
-		printf("Failed receiving STOP message from server\n");
-		delete_queue();
-		exit(EXIT_FAILURE);
-	}
-
-	printf("Succesfully deleted from server. Client shutting down...\n");
-	delete_queue();
-	exit(EXIT_SUCCESS);
+	if(c_queue_id != -1) delete_queue();
+	printf("Client shutting down\n");
 }
 
 void sigint_handler(int signum){
-	stop();
 	exit(EXIT_SUCCESS);
 }
-
 
 void connect_to(int id, char* key_str){
 	chatting_id = id;
@@ -107,8 +111,7 @@ void receive_msg(){
 	while(msgrcv(c_queue_id, &message, msgbuf_size, 0, IPC_NOWAIT) >= 0) {
 		switch (message.mtype) {
 			case STOP:
-				if (chatting_queue_id != -1) disconnect();
-				delete_queue();
+				s_queue_id = -1;
 				exit(EXIT_SUCCESS);
 			case DISCONNECT:
 				chatting_queue_id = -1;
@@ -229,15 +232,14 @@ int main (int argc, char** argv){
 		exit(EXIT_FAILURE);
 	}
 
+	atexit(stop);
+
 	key_t client_key = ftok(get_homedir(), getpid());
 
 	if((c_queue_id = msgget(client_key, IPC_CREAT | 0666)) == -1){
 		printf("Failed creating a client queue\n");
 		exit(EXIT_FAILURE);
 	}
-
-//	printf("KEY: %d\n", client_key);
-//	printf("QUEUE: %d\n", c_queue_id);
 
 
 	key_t server_key = ftok(get_homedir(), PROJ_ID);
@@ -248,14 +250,7 @@ int main (int argc, char** argv){
 		exit(EXIT_FAILURE);
 	}
 
-
 	init(client_key);
-
-
-	if(signal(SIGINT, sigint_handler) == SIG_ERR){
-		printf("Failed installing SIGINT handler\n");
-		exit(EXIT_FAILURE);
-	}
 
 	char* list_str = "LIST";
 	char* connect_str = "CONNECT";
@@ -263,9 +258,12 @@ int main (int argc, char** argv){
 	char* stop_str = "STOP";
 
 	char line[MAX_MSG_SIZE];
-	while(fgets(line, sizeof line, stdin)){
+	while(1){
 
 		receive_msg();
+
+		fgets(line, sizeof line, stdin);
+		if(strcmp(line, "") == 0) continue;
 
 		if(strncmp(line, list_str, strlen(list_str)) == 0){
 			list();
@@ -283,13 +281,13 @@ int main (int argc, char** argv){
 			disconnect();
 		}
 		else if(strncmp(line, stop_str, strlen(stop_str)) == 0){
-			stop();
+			exit(EXIT_SUCCESS);
 		}
 		else if(chatting_id != -1){
 			send_chat_message(line);
 		}
 		else{
-			printf("Invalid entry. Use command or if you're connected just chat! \n Available commands:\n%s\n%s\n%s (only when connected)\n%s\n",
+			printf("Invalid entry. Use command or if you're connected just chat! \nAvailable commands:\n%s\n%s\n%s (only when connected)\n%s\n",
 					list_str, connect_str, disconnect_str, stop_str);
 		}
 	}

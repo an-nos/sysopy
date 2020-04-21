@@ -203,6 +203,7 @@ void init(msgbuf msg){
 
 	if(msgsnd(c_queue_id, &response, msgbuf_size, 0) == -1){
 		printf("Failed sending a response to client\n");
+		return;
 	}
 
 	printf("Initialized %d\n", id);
@@ -210,21 +211,24 @@ void init(msgbuf msg){
 
 }
 
-
-void sigint_handler(int sig_number) {
+void exit_function(){
 	printf("Closing...\n");
 	exit_all();
 
-	if(msgctl(s_queue_id, IPC_RMID, 0) == -1){
+	if(s_queue_id != -1 && msgctl(s_queue_id, IPC_RMID, 0) == -1){
 		printf("Failed deleting sever queue\n");
 		exit(EXIT_FAILURE);
 	}
+}
 
+void sigint_handler(int sig_number) {
 	exit(EXIT_SUCCESS);
 }
 
 
 int main (int argc, char** argv){
+
+	atexit(exit_function);
 
 	for (int i = 0; i < MAX_CLIENTS; i++){
 		clients[i].pid = -1;
@@ -236,6 +240,7 @@ int main (int argc, char** argv){
 		printf("Failed installing SIGINT handler\n");
 		exit(EXIT_FAILURE);
 	}
+
 
 	key_t server_key = ftok(get_homedir(), PROJ_ID);
 
