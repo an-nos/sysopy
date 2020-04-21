@@ -7,12 +7,12 @@
 #include <fcntl.h>
 #include "common.h"
 
-
 struct client{	//id of client is its index
 	char name[NAME_LEN];
 	mqd_t queue;
 	int chatting_id;
 }; typedef struct client client;
+
 
 mqd_t s_queue = -1;
 client clients[MAX_CLIENTS];
@@ -27,9 +27,11 @@ int get_first_free(){
 
 }
 
+
 void sigint_handler(int sig_number){
 	exit(EXIT_SUCCESS);
 }
+
 
 void exit_function(){
 	printf("\n=== EXIT ===\n");
@@ -65,6 +67,7 @@ void exit_function(){
 
 }
 
+
 void handle_stop(char* message){
 	char* ptr;
 	int id = strtol(message, &ptr, 10);
@@ -80,14 +83,16 @@ void handle_stop(char* message){
 
 }
 
+
 void handle_init(char* message, int priority){
-	printf("=== INIT ===\n");
 
 	int id = get_first_free();
 	if(id < 0){
 		printf("Could not connect new client, reason: too many clients\n");
 		return;
 	}
+
+	printf("=== INIT %d ===\n", id);
 
 	strcpy(clients[id].name, message);
 
@@ -98,13 +103,9 @@ void handle_init(char* message, int priority){
 	sprintf(message, "%d", id);
 
 	mq_send(clients[id].queue, message, sizeof message, priority);
-	printf("Client of ID %d initialized\n", id);
-
-//	for(int i = 0; i < MAX_CLIENTS; i++){
-//		printf("%d %d %s\n", i, clients[i].queue, clients[i].name);
-//	}
 
 }
+
 
 void handle_list(char* message){
 
@@ -128,13 +129,12 @@ void handle_list(char* message){
 		strcat(message_buf, text_buf);
 	}
 
-//	printf("%s\n", message_buf);
-
 	if(mq_send(clients[id].queue, message_buf, sizeof message_buf, LIST) == -1){
 		printf("Could not send LIST reply to client. Error: %s\n", strerror(errno));
 	}
 
 }
+
 
 void connect(int id1, int id2){
 	char message[MAX_MSG_SIZE];
@@ -145,18 +145,17 @@ void connect(int id1, int id2){
 		printf("Could not CONNECT %d to %d. Error: %s\n", id1, id2, strerror(errno));
 	}
 	else{
-		printf("CONNECT sent from %d to %d\n", id1, id2);
+		printf("== CONNECT %d TO %d ===\n", id1, id2);
 	}
 	clients[id1].chatting_id = id2;
 
 }
 
+
 void handle_connect(char* message){
 	int id1 = atoi(strtok(message, " "));
 	int id2 = atoi(strtok(NULL, " "));
 
-	printf("id1 = %d, id2 = %d\n", id1, id2);
-	printf("=== CONNECT %d TO %d ===\n", id1, id2);
 	if(id1 == id2 || clients[id1].chatting_id != -1 || clients[id2].chatting_id != -1){
 		printf("Invalid connection\n");
 		char message[MAX_MSG_SIZE];
@@ -171,6 +170,7 @@ void handle_connect(char* message){
 
 }
 
+
 void disconnect(int id){
 	printf("=== DISCONECT %d ===\n", id);
 
@@ -184,6 +184,7 @@ void disconnect(int id){
 
 }
 
+
 void handle_disconnect(char* message){
 	int id = atoi(message);
 	disconnect(id);
@@ -192,6 +193,7 @@ void handle_disconnect(char* message){
 	clients[id].chatting_id = -1;
 
 }
+
 
 int main(int argc, char** argv){
 
@@ -250,8 +252,5 @@ int main(int argc, char** argv){
 				handle_init(message_buf, priority);
 				break;
 		}
-
 	}
-
-
 }

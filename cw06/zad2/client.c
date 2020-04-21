@@ -6,7 +6,6 @@
 #include <errno.h>
 #include <signal.h>
 #include <fcntl.h>
-#include <unistd.h>
 #include "common.h"
 
 int id = -1;
@@ -21,6 +20,7 @@ void sigint_handler(int sig_number){
 	exit(EXIT_SUCCESS);
 }
 
+
 void apply_nonblock(){
 	struct mq_attr new, old;
 	new.mq_flags = O_NONBLOCK;
@@ -29,6 +29,7 @@ void apply_nonblock(){
 	mq_getattr(c_queue, &old);
 }
 
+
 void erase_nonblock(){
 	struct mq_attr new, old;
 	new.mq_flags = 0;
@@ -36,6 +37,8 @@ void erase_nonblock(){
 	mq_setattr(c_queue, &new, &old);
 	mq_getattr(c_queue, &old);
 }
+
+
 void handle_disconnect(){
 	printf("In disconnect with chatting queue: %d\n", chatting_queue);
 	if(mq_close(chatting_queue) == -1){
@@ -46,6 +49,7 @@ void handle_disconnect(){
 	strcpy(chatting_name, "");
 	printf("Disconnected\n");
 }
+
 
 void disconnect(){
 	erase_nonblock();
@@ -62,6 +66,7 @@ void disconnect(){
 	}
 	handle_disconnect();
 }
+
 
 void handle_exit(){
 
@@ -82,7 +87,7 @@ void handle_exit(){
 
 
 void exit_function(){
-	printf("=== EXIT ===\n");
+	printf("\n=== EXIT ===\n");
 	if(chatting_queue != -1){
 		disconnect();
 	}
@@ -96,6 +101,7 @@ void exit_function(){
 
 	handle_exit();
 }
+
 
 void set_queue_name(){
 
@@ -114,6 +120,7 @@ void set_queue_name(){
 	name[NAME_LEN - 1] = '\0';
 
 }
+
 
 void init(){
 
@@ -140,7 +147,6 @@ void init(){
 
 
 void list(){
-//	printf("=== LIST ===\n");
 
 	erase_nonblock();
 
@@ -164,6 +170,7 @@ void list(){
 
 }
 
+
 void handle_connect(char* message){
 	if(strcmp(message, "") == 0){
 		printf("Connecting failed\n");
@@ -177,6 +184,7 @@ void handle_connect(char* message){
 	}
 	printf("Connected to %s\n", message);
 }
+
 
 void connect(int sec_id){
 	erase_nonblock();
@@ -196,6 +204,7 @@ void connect(int sec_id){
 	handle_connect(message);
 }
 
+
 void send_chat_message(char* line){
 	printf("Send: %s\n",line);
 	char message[MAX_MSG_SIZE];
@@ -205,6 +214,7 @@ void send_chat_message(char* line){
 	}
 
 }
+
 
 void receive_msg(){
 
