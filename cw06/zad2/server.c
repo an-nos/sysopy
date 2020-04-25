@@ -160,7 +160,7 @@ void handle_connect(char* message){
 		printf("Invalid connection\n");
 		char message[MAX_MSG_SIZE];
 		strcpy(message, "");
-		if(mq_send(clients[id1].queue, message, sizeof message, CONNECT) != -1){
+		if(mq_send(clients[id1].queue, message, sizeof message, CONNECT) == -1){
 			printf("Could not reply to CONNECT. Error: %s\n", strerror(errno));
 		}
 		return;
@@ -172,7 +172,7 @@ void handle_connect(char* message){
 
 
 void disconnect(int id){
-	printf("=== DISCONECT %d ===\n", id);
+	printf("=== DISCONNECT %d ===\n", id);
 
 	char message[MAX_MSG_SIZE];
 	strcpy(message,"");
@@ -186,6 +186,7 @@ void disconnect(int id){
 
 
 void handle_disconnect(char* message){
+
 	int id = atoi(message);
 	disconnect(id);
 	disconnect(clients[id].chatting_id);

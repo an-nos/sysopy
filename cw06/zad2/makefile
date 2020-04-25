@@ -9,7 +9,7 @@ main: client.c server.c
 
 test:
 	make main
-	./main
+	./server
 
 clean:
 	rm -f server

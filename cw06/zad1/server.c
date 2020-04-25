@@ -43,6 +43,8 @@ const char* get_homedir(){
 
 void stop_client(int client_id){
 
+	printf("=== STOP ID %d ===\n", client_id);
+
 	msgbuf stop_msg;
 	stop_msg.mtype = STOP;
 	stop_msg.sender_id = getpid();
@@ -91,6 +93,7 @@ void send_disconnect_response(int client_id){
 }
 
 void disconnect(int client_id){
+	printf("=== DISCONECT %d ===\n", client_id);
 
 	int chatting_id = clients[client_id].chatting_id;
 
@@ -101,6 +104,7 @@ void disconnect(int client_id){
 
 
 void list(int client_id){
+	printf("=== LIST FOR ID %d ===\n", client_id);
 
 	msgbuf list_msg;
 	list_msg.mtype = LIST;
@@ -118,6 +122,7 @@ void list(int client_id){
 		if(clients[i].pid == -1) continue;
 
 		char* availability = (clients[i].chatting_id == -1) ? available : busy;
+		if(i == client_id) availability = "YOU";
 
 		sprintf(text_buf, "ID:\t%d\tAVAILABILITY:\t%s\n", i, availability);
 		strcat(list_msg.text, text_buf);
@@ -133,8 +138,9 @@ void list(int client_id){
 
 
 void send_connect_msg(int client_id, int chatting_id){
+	printf("== CONNECT %d TO %d ===\n", client_id, chatting_id);
 
-	key_t chatting_key = clients[chatting_id].queue_key;
+	key_t chatting_key = (chatting_id == -1) ? -1 : clients[chatting_id].queue_key;
 
 	msgbuf connect_msg;
 	connect_msg.sender_id = client_id;
@@ -149,21 +155,21 @@ void send_connect_msg(int client_id, int chatting_id){
 		return;
 	}
 
+
 	clients[client_id].chatting_id = chatting_id;
 
-	printf("Conencted %d to %d", client_id, chatting_id);
+	if(chatting_id != -1)
+		printf("Conencted %d to %d\n", client_id, chatting_id);
 
 }
 
 
+
 void connect(int sender_id, int receiver_id){
 
-	if(clients[sender_id].chatting_id != -1){
-		printf("Client of id %d is still chatting", sender_id);
-		return;
-	}
-	if(clients[receiver_id].chatting_id != -1){
-		printf("Client of id %d is still chatting", receiver_id);
+	if(sender_id == receiver_id || clients[sender_id].chatting_id != -1 || clients[receiver_id].chatting_id != -1){
+		printf("Invalid connection request.\n");
+		send_connect_msg(sender_id, -1);
 		return;
 	}
 
@@ -181,6 +187,8 @@ void connect(int sender_id, int receiver_id){
 void init(msgbuf msg){
 
 	int id = get_first_free();
+
+	printf("=== INIT %d ===\n", id);
 
 	if(id == -1){
 		printf("All client IDs are taken\n");
@@ -206,13 +214,10 @@ void init(msgbuf msg){
 		return;
 	}
 
-	printf("Initialized %d\n", id);
-
-
 }
 
 void exit_function(){
-	printf("Closing...\n");
+	printf("\n=== EXIT ===\n");
 	exit_all();
 
 	if(s_queue_id != -1 && msgctl(s_queue_id, IPC_RMID, 0) == -1){
@@ -258,14 +263,12 @@ int main (int argc, char** argv){
 		if(msgrcv(s_queue_id, &message_buffer, msgbuf_size, 0, 0) < 0) continue;
 		switch(message_buffer.mtype){
 			case STOP:
-				printf("Received STOP from client %d...\n", message_buffer.sender_id);
 				stop_client(message_buffer.sender_id);
 				break;
 			case DISCONNECT:
 				disconnect(message_buffer.sender_id);
 				break;
 			case LIST:
-				printf("LIST received\n");
 				list(message_buffer.sender_id);
 				break;
 			case CONNECT:

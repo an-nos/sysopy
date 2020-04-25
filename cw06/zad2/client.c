@@ -14,7 +14,6 @@ mqd_t s_queue = -1;
 mqd_t chatting_queue = -1;
 char chatting_name[NAME_LEN];
 char name[NAME_LEN];
-int received = 0;
 
 void sigint_handler(int sig_number){
 	exit(EXIT_SUCCESS);
@@ -201,6 +200,11 @@ void connect(int sec_id){
 		return;
 	}
 
+	if(strcmp(message, "") == 0){
+		printf("Invalid request. Cannot connect to yourself or busy\n");
+		return;
+	}
+
 	handle_connect(message);
 }
 
@@ -241,7 +245,6 @@ void receive_msg(){
 				printf("Received message: %s\n", message);
 				break;
 		}
-		received = 1;
 	}
 
 }

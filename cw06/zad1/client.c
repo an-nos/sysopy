@@ -14,10 +14,12 @@ int s_queue_id = -1;
 int c_queue_id = -1;
 int chatting_queue_id = -1;
 
+
 const char* get_homedir(){
 	struct passwd *pw = getpwuid(getuid());
 	return pw->pw_dir;
 }
+
 
 void delete_queue(){
 
@@ -31,6 +33,7 @@ void delete_queue(){
 	c_queue_id = -1;
 
 }
+
 
 void disconnect(){
 
@@ -57,13 +60,13 @@ void disconnect(){
 	printf("Disconnected\n");
 }
 
+
 void stop(){
 
 	if (chatting_queue_id != -1) {
 		printf("\nDisconnecting...\n");
 		disconnect();
 	}
-
 
 	if(s_queue_id != -1) {
 
@@ -89,9 +92,11 @@ void stop(){
 	printf("Client shutting down\n");
 }
 
+
 void sigint_handler(int signum){
 	exit(EXIT_SUCCESS);
 }
+
 
 void connect_to(int id, char* key_str){
 	chatting_id = id;
@@ -103,6 +108,7 @@ void connect_to(int id, char* key_str){
 
 	printf("Connected to %d\n", id);
 }
+
 
 void receive_msg(){
 
@@ -127,6 +133,7 @@ void receive_msg(){
 		}
 	}
 }
+
 
 void list(){
 	msgbuf list_msg;
@@ -164,6 +171,11 @@ void connect(int id){
 
 	if(msgrcv(c_queue_id, &connect_msg, msgbuf_size, 0, 0) == -1){
 		printf("Failed receiving connect response\n");
+		return;
+	}
+
+	if(connect_msg.receiver_id == -1){
+		printf("Cannot connect to yourself or busy.\n");
 		return;
 	}
 
@@ -208,6 +220,7 @@ void init(key_t client_key){
 
 }
 
+
 void send_chat_message(char* text){
 
 	msgbuf chat_msg;
@@ -222,7 +235,6 @@ void send_chat_message(char* text){
 	}
 
 }
-
 
 
 int main (int argc, char** argv){
@@ -263,7 +275,7 @@ int main (int argc, char** argv){
 		receive_msg();
 
 		fgets(line, sizeof line, stdin);
-		if(strcmp(line, "") == 0) continue;
+		if(strcmp(line, "\0") == 0) continue;
 
 		if(strncmp(line, list_str, strlen(list_str)) == 0){
 			list();
