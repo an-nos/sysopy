@@ -28,7 +28,7 @@ void exit_fun(){
 }
 
 int get_random_number(){
-	return 1 + rand()%100;
+	return 1 + rand()%RAND_RANGE;
 }
 
 
@@ -53,7 +53,6 @@ void add(int sem_id, int orders_id){
 	if(semop(sem_id, sops, 3) == -1) error_exit("Could not execute operations on semaphores.");
 
 	orders* orders = shmat(orders_id, NULL, 0);
-	printf("Worker1 i: %d\n", orders->first_free);
 
 	orders->vals[orders->first_free] = order_value;
 	orders->first_free = (orders->first_free + 1) % MAX_ORDERS;
@@ -74,7 +73,6 @@ void add(int sem_id, int orders_id){
 		finalize[semsop_idx].sem_op = 1;
 		finalize[semsop_idx].sem_flg = 0;
 		semsop_idx++;
-		printf("No more free places\n");
 	}
 
 	if(semctl(sem_id, 1, GETVAL, NULL) == 1){	//if there were no more to prepare before
@@ -117,7 +115,7 @@ int main(int argc, char** argv){
 
 
 	while(1){
-		usleep((rand()%5 + 1) * 100000);
+		usleep((rand()%5 + 1) * RAND_TIME_MUL);
 		add(sem_id, orders_id);
 	}
 

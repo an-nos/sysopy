@@ -8,10 +8,11 @@
 #define ORD_ID 'b'
 
 #define NSEMS 4
-
-#define WORKER1_NUM 2
+#define RAND_RANGE 100
+#define RAND_TIME_MUL 100000
+#define WORKER1_NUM 5
 #define WORKER2_NUM 2
-#define WORKER3_NUM 2
+#define WORKER3_NUM 3
 
 struct orders{
 	int first_free;

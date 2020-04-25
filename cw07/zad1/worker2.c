@@ -45,7 +45,6 @@ void prepare(int sem_id, int orders_id){
 	if(semop(sem_id, sops, 3) == -1) error_exit("Could not execute operations on semaphores.");
 
 	orders* orders = shmat(orders_id, NULL, 0);
-	printf("Worker2 i: %d\n", orders->first_to_prep);
 
 	orders->vals[orders->first_to_prep] *= 2;
 	int n = orders->vals[orders->first_to_prep];
@@ -105,7 +104,7 @@ int main(int argc, char** argv){
 
 
 	while(1){
-		usleep((rand()%5 + 1) * 100000);
+		usleep((rand()%5 + 1) * RAND_TIME_MUL);
 		prepare(sem_id, orders_id);
 	}
 

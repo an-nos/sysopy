@@ -14,7 +14,8 @@
 const int workers_num = WORKER1_NUM + WORKER2_NUM + WORKER3_NUM;
 
 pid_t worker_pids[WORKER1_NUM + WORKER2_NUM + WORKER3_NUM];
-
+int sem_id;
+int orders_id;
 
 void error_exit(char* message){
 	printf("%s Error: %s\n", message, strerror(errno));
@@ -30,6 +31,9 @@ void exit_function(){
 	for(int i = 0; i<workers_num; i++){
 		kill(worker_pids[i], SIGINT);
 	}
+	semctl(sem_id, 0, IPC_RMID, NULL);
+	shmctl(orders_id, IPC_RMID, NULL);
+
 }
 
 
@@ -89,13 +93,15 @@ void remove_shared_mem(int id){
 int main(int argc, char** argv){
 
 	atexit(exit_function);
+	signal(SIGINT, sigint_handle);
+
 
 	char cwd[PATH_MAX];
 	getcwd(cwd, sizeof cwd);
 
-	int sem_id = create_semaphores(cwd);
+	sem_id = create_semaphores(cwd);
 
-	int orders_id = create_orders(cwd);
+	orders_id = create_orders(cwd);
 
 	for(int i = 0; i < workers_num; i++){
 
@@ -112,7 +118,6 @@ int main(int argc, char** argv){
 	}
 
 
-
 	for(int i = 0; i < WORKER1_NUM; i++){
 		printf("WorkerPID: %d\n", worker_pids[i]);
 		wait(NULL);
@@ -120,8 +125,6 @@ int main(int argc, char** argv){
 
 
 	remove_shared_mem(orders_id);
-	//TODO: remove semaphores here
-
 
 
 }
