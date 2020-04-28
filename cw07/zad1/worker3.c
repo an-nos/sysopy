@@ -1,46 +1,13 @@
-#include <stdlib.h>
-#include <stdio.h>
-#include <sys/sem.h>
-#include <sys/types.h>
-#include <sys/ipc.h>
-#include <sys/shm.h>
-#include <unistd.h>
-#include <limits.h>
-#include <time.h>
-#include <signal.h>
-#include <string.h>
-#include <errno.h>
 #include "common.h"
 
-int sem_id;
 
-void error_exit(char* message){
-	printf("%s Error: %s\n", message, strerror(errno));
-	exit(EXIT_FAILURE);
-}
-
-void sigint_handler(int signo){
-	exit(EXIT_SUCCESS);
-}
-
-void exit_fun(){
-
-}
 
 void send(int sem_id, int orders_id){
 	struct sembuf sops[3];
 
-	sops[0].sem_num = IN_USE;	//wait until nobody modifies orders
-	sops[0].sem_op = 0;
-	sops[0].sem_flg = 0;
-
-	sops[1].sem_num = ARE_TO_SEND;	//wait until there are orders to send
-	sops[1].sem_op = 0;
-	sops[1].sem_flg = 0;
-
-	sops[2].sem_num = IN_USE;	//mark orders as currently being used
-	sops[2].sem_op = 1;
-	sops[2].sem_flg = 0;
+	fill_sops_pos(sops, 0, IN_USE, 0, 0);	//wait until nobody modifies orders
+	fill_sops_pos(sops, 1, ARE_TO_SEND, 0, 0); //wait until there are orders to send
+	fill_sops_pos(sops, 2, IN_USE, 1, 0);	//mark orders as currently being used
 
 	if(semop(sem_id, sops, 3) == -1) error_exit("Could not execute operations on semaphores.");
 
@@ -60,24 +27,15 @@ void send(int sem_id, int orders_id){
 
 	int semsop_idx = 0;
 
-	if(orders->num_to_send == 0){
-		finalize[semsop_idx].sem_num = ARE_TO_SEND;		//there are no more to send
-		finalize[semsop_idx].sem_op = 1;
-		finalize[semsop_idx].sem_flg = 0;
-		semsop_idx++;
+	if(orders->num_to_send == 0){	//there are no more to send
+		fill_sops_pos(finalize, semsop_idx++, ARE_TO_SEND, 1, 0);
 	}
 
 	if(semctl(sem_id, 3, GETVAL, NULL) == 1){		//if there were no free places before
-		finalize[semsop_idx].sem_num = ARE_FREE;
-		finalize[semsop_idx].sem_op = -1;
-		finalize[semsop_idx].sem_flg = 0;
-		semsop_idx++;
+		fill_sops_pos(finalize, semsop_idx++, ARE_FREE, -1, 0);
 	}
 
-	finalize[semsop_idx].sem_num = IN_USE;
-	finalize[semsop_idx].sem_op = -1;
-	finalize[semsop_idx].sem_flg = 0;
-	semsop_idx++;
+	fill_sops_pos(finalize, semsop_idx++, IN_USE, -1, 0);
 
 	if(semop(sem_id, finalize, semsop_idx) == -1) error_exit("Could not execute operations on semaphores.");
 	shmdt(orders);
@@ -89,13 +47,12 @@ int main(int argc, char** argv){
 	srand(time(NULL));
 
 	signal(SIGINT, sigint_handler);
-	atexit(exit_fun);
 
 	char cwd[PATH_MAX];
 	getcwd(cwd, sizeof cwd);
 	key_t sem_key = ftok(cwd, SEM_ID);
 
-	sem_id = semget(sem_key, 0, 0);
+	int sem_id = semget(sem_key, 0, 0);
 	if(sem_id == -1) error_exit("Could not access semaphores.");
 
 	key_t arr_key = ftok(cwd, ORD_ID);

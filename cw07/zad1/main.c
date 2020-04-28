@@ -1,13 +1,3 @@
-#include <stdlib.h>
-#include <stdio.h>
-#include <sys/types.h>
-#include <sys/ipc.h>
-#include <sys/shm.h>
-#include <sys/sem.h>
-#include <unistd.h>
-#include <limits.h>
-#include <errno.h>
-#include <string.h>
 #include <wait.h>
 #include "common.h"
 
@@ -17,15 +7,6 @@ pid_t worker_pids[WORKER1_NUM + WORKER2_NUM + WORKER3_NUM];
 int sem_id;
 int orders_id;
 
-void error_exit(char* message){
-	printf("%s Error: %s\n", message, strerror(errno));
-	exit(EXIT_FAILURE);
-}
-
-void sigint_handle(int signo){
-	exit(EXIT_SUCCESS);
-
-}
 
 void exit_function(){
 	for(int i = 0; i<workers_num; i++){
@@ -84,8 +65,6 @@ int create_orders(char* path){
 }
 
 
-
-
 void remove_shared_mem(int id){
 	shmctl(id, IPC_RMID, 0);
 }
@@ -93,7 +72,7 @@ void remove_shared_mem(int id){
 int main(int argc, char** argv){
 
 	atexit(exit_function);
-	signal(SIGINT, sigint_handle);
+	signal(SIGINT, sigint_handler);
 
 
 	char cwd[PATH_MAX];

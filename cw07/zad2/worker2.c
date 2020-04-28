@@ -1,41 +1,16 @@
-#include <stdlib.h>
-#include <stdio.h>
-#include <semaphore.h>
-#include <fcntl.h>
-#include <sys/mman.h>
-#include <errno.h>
-#include <string.h>
-#include <signal.h>
-#include <time.h>
-#include <unistd.h>
 #include "common.h"
 
 sem_t* in_use_sem;
 sem_t* are_to_prep_sem;
 sem_t* are_to_send_sem;
-sem_t* are_free_sem;
 
-void error_exit(char* message){
-	printf("%s Error: %s\n", message, strerror(errno));
-	exit(EXIT_FAILURE);
-}
 
-void sigint_handler(int signo){
-	exit(EXIT_SUCCESS);
-}
-
-void exit_fun(){
+void exit_fun_worker(){
 	sem_close(in_use_sem);
 	sem_close(are_to_prep_sem);
 	sem_close(are_to_send_sem);
-	sem_close(are_free_sem);
 }
 
-sem_t* open_sem(char* name){
-	sem_t* sem = sem_open(name, O_RDWR);
-	if(sem == SEM_FAILED) error_exit("Could not create semaphore.");
-	return sem;
-}
 
 void prepare(int orders_fd){
 
@@ -79,14 +54,13 @@ void prepare(int orders_fd){
 int main(int argc, char** argv){
 
 	signal(SIGINT, sigint_handler);
-	if(atexit(exit_fun) == -1) error_exit("atexit failed.");
+	if(atexit(exit_fun_worker) == -1) error_exit("atexit failed.");
 
 	srand(time(NULL));
 
 	in_use_sem = open_sem(IN_USE);
 	are_to_prep_sem = open_sem(ARE_TO_PREP);
 	are_to_send_sem = open_sem(ARE_TO_SEND);
-	are_free_sem = open_sem(ARE_FREE);
 
 	int orders_fd = shm_open(ORD_NAME, O_RDWR, S_IRWXU | S_IRWXG | S_IRWXO);
 	if(orders_fd == -1) error_exit("Could not open shared memory.");

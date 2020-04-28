@@ -1,6 +1,19 @@
 #ifndef SYSOPY_COMMON_H
 #define SYSOPY_COMMON_H
 
+#include <stdlib.h>
+#include <stdio.h>
+#include <sys/sem.h>
+#include <sys/types.h>
+#include <sys/ipc.h>
+#include <sys/shm.h>
+#include <unistd.h>
+#include <limits.h>
+#include <time.h>
+#include <signal.h>
+#include <string.h>
+#include <errno.h>
+
 #define MAX_ORDERS 10
 
 #define SEM_ID 'a'
@@ -43,6 +56,21 @@ enum sem_help{
 	ARE_FREE = 3
 
 };
+
+void error_exit(char* message){
+	printf("%s Error: %s\n", message, strerror(errno));
+	exit(EXIT_FAILURE);
+}
+
+void sigint_handler(int signo){
+	exit(EXIT_SUCCESS);
+}
+
+void fill_sops_pos(struct sembuf* sops, int idx, int num, int op, int flg){
+	sops[idx].sem_num = num;
+	sops[idx].sem_op = op;
+	sops[idx].sem_flg = flg;
+}
 
 
 #endif //SYSOPY_COMMON_H

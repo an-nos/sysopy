@@ -1,15 +1,5 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <semaphore.h>
-#include <fcntl.h>
-#include <sys/mman.h>
-#include <signal.h>
-#include <string.h>
-#include <errno.h>
-#include <unistd.h>
 #include <wait.h>
 #include "common.h"
-
 
 
 const int workers_num = WORKER1_NUM + WORKER2_NUM + WORKER3_NUM;
@@ -18,15 +8,6 @@ pid_t worker_pids[WORKER1_NUM + WORKER2_NUM + WORKER3_NUM];
 int sem_id;
 int orders_id;
 
-void error_exit(char* message){
-	printf("%s Error: %s\n", message, strerror(errno));
-	exit(EXIT_FAILURE);
-}
-
-void sigint_handle(int signo){
-	exit(EXIT_SUCCESS);
-
-}
 
 void exit_function(){
 
@@ -88,7 +69,7 @@ void create_orders(){
 int main(int argc, char** argv){
 
 	atexit(exit_function);
-	signal(SIGINT, sigint_handle);
+	signal(SIGINT, sigint_handler);
 
 	create_sems();
 
