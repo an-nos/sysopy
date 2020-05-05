@@ -1,0 +1,93 @@
+MODE: sign	 THREADS: 1	 FILE: apollonian_gasket.ascii.pgm
+
+Thread 1 took 1672 ms
+TOTAL TIME: 1839
+
+MODE: sign	 THREADS: 2	 FILE: apollonian_gasket.ascii.pgm
+
+Thread 1 took 1294 ms
+Thread 2 took 1794 ms
+TOTAL TIME: 3477
+
+MODE: sign	 THREADS: 4	 FILE: apollonian_gasket.ascii.pgm
+
+Thread 1 took 1099 ms
+Thread 2 took 1100 ms
+Thread 3 took 3201 ms
+Thread 4 took 4022 ms
+TOTAL TIME: 5462
+
+MODE: sign	 THREADS: 8	 FILE: apollonian_gasket.ascii.pgm
+
+Thread 1 took 1054 ms
+Thread 2 took 1087 ms
+Thread 3 took 1061 ms
+Thread 4 took 4046 ms
+Thread 5 took 3009 ms
+Thread 6 took 1217 ms
+Thread 7 took 4548 ms
+Thread 8 took 1763 ms
+TOTAL TIME: 9838
+
+MODE: block	 THREADS: 1	 FILE: apollonian_gasket.ascii.pgm
+
+Thread 1 took 844 ms
+TOTAL TIME: 1015
+
+MODE: block	 THREADS: 2	 FILE: apollonian_gasket.ascii.pgm
+
+Thread 1 took 404 ms
+Thread 2 took 407 ms
+TOTAL TIME: 1014
+
+MODE: block	 THREADS: 4	 FILE: apollonian_gasket.ascii.pgm
+
+Thread 1 took 195 ms
+Thread 2 took 221 ms
+Thread 3 took 226 ms
+Thread 4 took 255 ms
+TOTAL TIME: 1140
+
+MODE: block	 THREADS: 8	 FILE: apollonian_gasket.ascii.pgm
+
+Thread 1 took 105 ms
+Thread 2 took 115 ms
+Thread 3 took 137 ms
+Thread 4 took 135 ms
+Thread 5 took 135 ms
+Thread 6 took 138 ms
+Thread 7 took 146 ms
+Thread 8 took 119 ms
+TOTAL TIME: 1412
+
+MODE: interleaved	 THREADS: 1	 FILE: apollonian_gasket.ascii.pgm
+
+Thread 1 took 765 ms
+TOTAL TIME: 932
+
+MODE: interleaved	 THREADS: 2	 FILE: apollonian_gasket.ascii.pgm
+
+Thread 1 took 393 ms
+Thread 2 took 389 ms
+TOTAL TIME: 987
+
+MODE: interleaved	 THREADS: 4	 FILE: apollonian_gasket.ascii.pgm
+
+Thread 1 took 188 ms
+Thread 2 took 188 ms
+Thread 3 took 212 ms
+Thread 4 took 204 ms
+TOTAL TIME: 1045
+
+MODE: interleaved	 THREADS: 8	 FILE: apollonian_gasket.ascii.pgm
+
+Thread 1 took 106 ms
+Thread 2 took 105 ms
+Thread 3 took 107 ms
+Thread 4 took 118 ms
+Thread 5 took 106 ms
+Thread 6 took 110 ms
+Thread 7 took 134 ms
+Thread 8 took 127 ms
+TOTAL TIME: 1313
+
