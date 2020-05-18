@@ -8,6 +8,8 @@ main: main.c
 
 test:
 	make main
+	./main 5 10
+	make clean
 
 clean:
 	rm -f main

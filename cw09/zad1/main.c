@@ -40,7 +40,6 @@ void* barber_routine(){
 	is_barber_sleeping = 0;
 
 	int current_client_idx = (last_idx + 1) % chairs_number;
-	printf("Current client idx %d\n", current_client_idx);
 	waiting_clients--;
 	active_clients--;
 	last_idx = current_client_idx;
@@ -50,8 +49,6 @@ void* barber_routine(){
 	printf("Golibroda: czeka %d klientow, gole klienta %ld\n", waiting_clients, current_client);
 	pthread_mutex_unlock(&chairs_mutex);
 	sleep(rand_int());
-
-//	pthread_cancel(current_client);
 
 
 	if(active_clients > 0) barber_routine();
