@@ -22,9 +22,15 @@ pthread_t net_thread;
 pthread_t ping_thread;
 
 int is_client(int i){
-	return i < MAX_CLIENTS && clients[i].fd != -1;
+	return i>= 0 && i < MAX_CLIENTS && clients[i].fd != -1;
 }
 
+int get_free_idx(){
+	for(int i = 0; i < MAX_CLIENTS; i++){
+		if(!is_client(i)) return i;
+	}
+	return -1;
+}
 
 int get_client_index(char* nick){
 	for(int i = 0; i < MAX_CLIENTS; i++){
@@ -177,7 +183,7 @@ void connect_client(int fd, struct sockaddr* addr, char* rec_nick){
 		free(nick);
 		return;
 	}
-	if(first_free == MAX_CLIENTS){
+	if(first_free == -1){
 		send_message_to(fd, addr, CONNECT_FAILED, NULL, "Server is full");
 		free(nick);
 		return;
@@ -206,7 +212,7 @@ void connect_client(int fd, struct sockaddr* addr, char* rec_nick){
 		printf("WAIT sent\n");
 	}
 
-	first_free++;
+	first_free=get_free_idx();
 
 	printf("Connected\n");
 
@@ -224,7 +230,6 @@ void net_routine(void* arg){
 	for( ; ; ) {
 
 		pthread_mutex_lock(&clients_mutex);
-		printf("Locked mutex in net_routine1\n");
 
 		for (int i = 0; i < 2; i++) {
 			poll_fds[i].events = POLLIN;
@@ -232,7 +237,6 @@ void net_routine(void* arg){
 		}
 
 		pthread_mutex_unlock(&clients_mutex);
-		printf("Unlocked mutex in net_routine1\n");
 
 		printf("Polling...\n");
 		if(poll(poll_fds, 2, -1) == -1) error_exit("Poll failed.");
@@ -273,6 +277,10 @@ void net_routine(void* arg){
 					case DISCONNECT:
 						j = get_client_index(msg.nick);
 						printf("Received disconnect from client\n");
+						if(is_client(clients[j].opponent_idx)){
+							send_message_to(clients[clients[j].opponent_idx].fd, clients[clients[j].opponent_idx].addr, DISCONNECT, NULL, clients[clients[j].opponent_idx].nick);
+							empty_client(clients[j].opponent_idx);
+						}
 						empty_client(j);
 						free(addr);
 						break;
@@ -284,12 +292,9 @@ void net_routine(void* arg){
 		}
 
 		pthread_mutex_unlock(&clients_mutex);
-		printf("Locked mutex in net_routine2\n");
 	}
 
 }
-
-
 
 void ping_routine(void* arg){
 	for( ; ; ){
@@ -297,7 +302,6 @@ void ping_routine(void* arg){
 		printf("Ping in progress...\n");
 
 		pthread_mutex_lock(&clients_mutex);
-		printf("Locked mutex in ping_routine\n");
 
 
 		for(int i = 0; i < MAX_CLIENTS; i++){
@@ -318,12 +322,15 @@ void ping_routine(void* arg){
 			if(is_client(i) && clients[i].active == 0) {
 				printf("Response from %d was not received. Disconnecting %d...\n", i, i);
 				send_message_to(clients[i].fd, clients[i].addr, DISCONNECT, NULL, clients[i].nick);
+				if(is_client(clients[i].opponent_idx)){
+					send_message_to(clients[clients[i].opponent_idx].fd, clients[clients[i].opponent_idx].addr, DISCONNECT, NULL, clients[clients[i].opponent_idx].nick);
+					empty_client(clients[i].opponent_idx);
+				}
 				empty_client(i);
 			}
 		}
 
 		pthread_mutex_unlock(&clients_mutex);
-		printf("Unlocked mutex in ping_routine\n");
 
 		printf("Ping ended.\n");
 

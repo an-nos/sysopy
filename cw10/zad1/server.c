@@ -22,7 +22,7 @@ pthread_t net_thread;
 pthread_t ping_thread;
 
 int is_client(int i){
-	return i < MAX_CLIENTS && clients[i].fd != -1;
+	return i>= 0 && i < MAX_CLIENTS && clients[i].fd != -1;
 }
 
 void close_server(){
