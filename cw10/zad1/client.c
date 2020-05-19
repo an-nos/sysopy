@@ -78,7 +78,7 @@ void concurrent_move(void* arg){
 	move = move_char - '0';
 
 	while(move < 0 || move > 8 || msg->game.board[move] != '-'){
-		printf("Field is invalid, try again.\n");
+//		printf("Field is invalid, try again.\n");
 		move_char = getchar();
 		move = move_char - '0';
 	}
@@ -96,7 +96,7 @@ void make_move(message *msg){
 		message rec_msg = receive_message_nonblock(server_fd);
 		switch(rec_msg.message_type){
 			case PING:
-//				printf("Received PING from server. Pinging back...\n");
+				printf("Received PING from server. Pinging back...\n");
 				send_message(server_fd, PING, NULL, NULL);
 				break;
 			case DISCONNECT:

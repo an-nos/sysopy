@@ -29,7 +29,9 @@ void close_server(){
 
 	if(pthread_cancel(net_thread) == -1) error_exit("Could not cancel net tread");
 	if(pthread_cancel(ping_thread) == -1) error_exit("Could not cancel ping thread");
-
+	close(local_sock);
+	unlink(socket_path);
+	close(inet_sock);
 }
 
 void sigint_handler_server(int signo){
