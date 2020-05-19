@@ -82,18 +82,6 @@ void start_inet(){
 
 }
 
-//void disconnect_client(int i){
-//	printf("Disconnecting %s\n", clients[i].nick);
-//	if(!is_client(i)) return;
-//	if(shutdown(clients[i].fd, SHUT_RDWR) < 0)
-//		error_exit("Could not disconnect client.");
-//
-//	if(close(clients[i].fd) < 0)
-//		error_exit("Could not close client.");
-//
-//}
-
-
 void empty_client(int i){
 	if(clients[i].nick != NULL) free(clients[i].nick);
 	if(clients[i].addr != NULL) free(clients[i].addr);
@@ -251,7 +239,6 @@ void net_routine(void* arg){
 		pthread_mutex_lock(&clients_mutex);
 
 		for(int i = 0; i < 2; i++){
-			printf("They see me pollin, they hatin\n");
 			if(poll_fds[i].revents && POLLIN){
 				struct sockaddr* addr = malloc(sizeof(struct sockaddr));
 				socklen_t len = sizeof(&addr);
@@ -286,7 +273,6 @@ void net_routine(void* arg){
 					case DISCONNECT:
 						j = get_client_index(msg.nick);
 						printf("Received disconnect from client\n");
-//						disconnect_client(j);
 						empty_client(j);
 						free(addr);
 						break;
@@ -332,7 +318,6 @@ void ping_routine(void* arg){
 			if(is_client(i) && clients[i].active == 0) {
 				printf("Response from %d was not received. Disconnecting %d...\n", i, i);
 				send_message_to(clients[i].fd, clients[i].addr, DISCONNECT, NULL, clients[i].nick);
-//				disconnect_client(i);
 				empty_client(i);
 			}
 		}

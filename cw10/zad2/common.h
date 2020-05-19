@@ -72,13 +72,13 @@ void empty_game_board(game* game){
 }
 
 
+
 void error_exit(char* msg){
 	printf("%s %s", msg, strerror(errno));
 	exit(EXIT_FAILURE);
 }
 
 void send_message(int fd, message_type type, game* game, char* nick){
-	printf("nick in send_message: %s\n",nick);
 
 	char* message = calloc(MSG_SIZE, sizeof(char));
 
@@ -86,7 +86,7 @@ void send_message(int fd, message_type type, game* game, char* nick){
 	else sprintf(message, "%d %s %c %c %s", (int) type, game->board, game->turn, game->winner, nick);
 
 	if(write(fd, message, MSG_SIZE) < 0) error_exit("Could not send message.");
-	printf("Message sent: %s\n",message);
+//	printf("Message sent: %s\n",message);
 	free(message);
 }
 
@@ -98,7 +98,7 @@ void send_message_to(int fd, struct sockaddr* addr, message_type type, game* gam
 	else sprintf(message, "%d %s %c %c %s", (int) type, game->board, game->turn, game->winner, nick);
 
 	if(sendto(fd, message, MSG_SIZE, 0, addr, sizeof(struct sockaddr)) < 0) error_exit("Could not send message.");
-	 printf("Message sent: %s\n",message);
+//	 printf("Message sent: %s\n",message);
 	free(message);
 }
 
@@ -116,8 +116,8 @@ message receive_message(int fd){
 		free(msg_buf);
 		return msg;
 	}
-	printf("Count of read bytes %d\n", count);
-	printf("Message read: %s\n", msg_buf);
+//	printf("Count of read bytes %d\n", count);
+//	printf("Message read: %s\n", msg_buf);
 	char* token;
 	char* rest = msg_buf;
 	strcpy(msg.nick, "");
@@ -170,8 +170,8 @@ message receive_message_from(int fd, struct sockaddr* addr, socklen_t len){
 		free(msg_buf);
 		return msg;
 	}
-	printf("Count of read bytes %d\n", count);
-	printf("Message read: %s\n", msg_buf);
+//	printf("Count of read bytes %d\n", count);
+//	printf("Message read: %s\n", msg_buf);
 	char* token;
 	char* rest = msg_buf;
 	strcpy(msg.nick, "");
@@ -228,7 +228,7 @@ message receive_message_nonblock(int fd){
 		return msg;
 	}
 
-	printf("Message read: %s\n", msg_buf);
+//	printf("Message read: %s\n", msg_buf);
 	char *token;
 	char *rest = msg_buf;
 

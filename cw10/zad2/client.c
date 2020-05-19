@@ -11,14 +11,16 @@ int move;
 void disconnect_from_server(){
 	printf("Disconnecting from server...\n");
 	send_message(server_fd, DISCONNECT, NULL, nick);
-//	if(shutdown(server_fd, SHUT_RDWR) < 0) error_exit("Could not shutdown.");
-//	if(close(server_fd) < 0) error_exit("Could not close server descriptor.");
 	if(is_local) unlink(nick);
 	exit(EXIT_SUCCESS);
 }
 
 void sigint_handler_client(int signo){
 	printf("Closing client...\n");
+	exit(EXIT_SUCCESS);
+}
+
+void at_exit_fun(){
 	disconnect_from_server();
 }
 
@@ -94,7 +96,7 @@ void concurrent_move(void* arg){
 	move = move_char - '0';
 
 	while(move < 0 || move > 8 || msg->game.board[move] != '-'){
-		printf("Field is invalid, try again.\n");
+//		printf("Field is invalid, try again.\n");
 		move_char = getchar();
 		move = move_char - '0';
 	}
@@ -203,6 +205,7 @@ int main(int argc, char** argv){
 		printf("server IP: %s port: %d\n",server, port_no);
 	}
 
+	atexit(at_exit_fun);
 	signal(SIGINT, sigint_handler_client);
 
 	if(is_local) local_connect_to_server();
