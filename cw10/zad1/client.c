@@ -7,6 +7,7 @@ char* nick;
 int server_fd;
 char symbol;
 int move;
+pthread_mutex_t move_mutex;
 
 void disconnect_from_server(){
 	printf("Disconnecting from server...\n");
@@ -73,13 +74,15 @@ void print_instruction(){
 void concurrent_move(void* arg){
 	message* msg = (message*) arg;
 	printf("Enter your move: ");
+	printf("Move before entering %d\n", move);
 
 	int move_char = getchar();
+	printf("new move %c\n", move_char);
 	move = move_char - '0';
 
 	while(move < 0 || move > 8 || msg->game.board[move] != '-'){
-//		printf("Field is invalid, try again.\n");
 		move_char = getchar();
+		printf("new move\n");
 		move = move_char - '0';
 	}
 	pthread_exit(0);
@@ -92,22 +95,28 @@ void make_move(message *msg){
 	pthread_t move_thread;
 	pthread_create(&move_thread, NULL, (void*) concurrent_move, msg);
 
-	while(move == -1){
-		message rec_msg = receive_message_nonblock(server_fd);
-		switch(rec_msg.message_type){
-			case PING:
-				printf("Received PING from server. Pinging back...\n");
-				send_message(server_fd, PING, NULL, NULL);
-				break;
-			case DISCONNECT:
-				printf("Received DISCONNECT from server.\n");
-				sigint_handler_client(SIGINT);
-				exit(EXIT_SUCCESS);
-			case EMPTY:
-				break;
-			default:
-				printf("Wrong message received\n");
-				break;
+	for( ; ; ) {
+		if (move < 0 || move > 8 || msg->game.board[move] != '-') {
+			message rec_msg = receive_message_nonblock(server_fd);
+			printf("msgread\n");
+			switch (rec_msg.message_type) {
+				case PING:
+					printf("Received PING from server. Pinging back...\n");
+					send_message(server_fd, PING, NULL, NULL);
+					break;
+				case DISCONNECT:
+					printf("Received DISCONNECT from server.\n");
+					sigint_handler_client(SIGINT);
+					exit(EXIT_SUCCESS);
+				case EMPTY:
+					break;
+				default:
+					printf("Wrong message received\n");
+					break;
+			}
+		}
+		else{
+			break;
 		}
 	}
 
