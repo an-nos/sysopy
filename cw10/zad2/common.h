@@ -25,7 +25,7 @@
 #include <linux/sockios.h>
 
 #define MAX_CLIENTS 13
-#define MSG_SIZE 20
+#define MSG_SIZE 30
 #define NICK_LEN 8
 
 struct game{
@@ -36,6 +36,7 @@ struct game{
 
 struct client{
 	int fd;					// -1 if client empty
+	struct sockaddr* addr;
 	char* nick;				//has to be unique
 	int active;
 	int opponent_idx;
@@ -77,16 +78,28 @@ void error_exit(char* msg){
 }
 
 void send_message(int fd, message_type type, game* game, char* nick){
+	printf("nick in send_message: %s\n",nick);
 
-	 char* message = calloc(MSG_SIZE, sizeof(char));
+	char* message = calloc(MSG_SIZE, sizeof(char));
 
-	if(type == CONNECT)sprintf(message, "%d %s", (int) type, nick);
-	else if(game == NULL) sprintf(message, "%d", (int) type);
-	else sprintf(message, "%d %s %c %c", (int) type, game->board, game->turn, game->winner);
+	if(game == NULL) sprintf(message, "%d %s", (int) type, nick);
+	else sprintf(message, "%d %s %c %c %s", (int) type, game->board, game->turn, game->winner, nick);
 
-	 if(write(fd, message, MSG_SIZE) < 0) error_exit("Could not send message.");
-//	 printf("Message sent: %s\n",message);
-	 free(message);
+	if(write(fd, message, MSG_SIZE) < 0) error_exit("Could not send message.");
+	printf("Message sent: %s\n",message);
+	free(message);
+}
+
+void send_message_to(int fd, struct sockaddr* addr, message_type type, game* game, char* nick){
+
+	char* message = calloc(MSG_SIZE, sizeof(char));
+
+	if(game == NULL)sprintf(message, "%d %s", (int) type, nick);
+	else sprintf(message, "%d %s %c %c %s", (int) type, game->board, game->turn, game->winner, nick);
+
+	if(sendto(fd, message, MSG_SIZE, 0, addr, sizeof(struct sockaddr)) < 0) error_exit("Could not send message.");
+	 printf("Message sent: %s\n",message);
+	free(message);
 }
 
 message receive_message(int fd){
@@ -103,8 +116,8 @@ message receive_message(int fd){
 		free(msg_buf);
 		return msg;
 	}
-//	printf("Count of read bytes %d\n", count);
-//	printf("Message read: %s\n", msg_buf);
+	printf("Count of read bytes %d\n", count);
+	printf("Message read: %s\n", msg_buf);
 	char* token;
 	char* rest = msg_buf;
 	strcpy(msg.nick, "");
@@ -119,6 +132,62 @@ message receive_message(int fd){
 			strcpy(msg.nick, token);
 			break;
 		case PING: case WAIT: case DISCONNECT:
+			token = strtok_r(rest, " ", &rest);
+			strcpy(msg.nick, token);
+			free(msg_buf);
+			return msg;
+		case MOVE: case GAME_FOUND: case GAME_FINISHED:
+			token = strtok_r(rest, " ", &rest);
+			strcpy(msg.game.board, token);
+			token = strtok_r(rest, " ", &rest);
+			msg.game.turn = token[0];
+			token = strtok_r(rest, " ", &rest);
+			msg.game.winner = token[0];
+			token = strtok_r(rest, " ", &rest);
+			strcpy(msg.nick, token);
+			break;
+		default:
+			break;
+	}
+
+	free(msg_buf);
+
+	return msg;
+
+}
+
+message receive_message_from(int fd, struct sockaddr* addr, socklen_t len){
+
+	message msg;
+
+	int count;
+
+	char* msg_buf = calloc(MSG_SIZE, sizeof(char));
+
+	if((count = recvfrom(fd, msg_buf, MSG_SIZE, 0, addr, &len)) < 0) error_exit("Could not receive message.");
+	if(count == 0){
+		msg.message_type=DISCONNECT;
+		free(msg_buf);
+		return msg;
+	}
+	printf("Count of read bytes %d\n", count);
+	printf("Message read: %s\n", msg_buf);
+	char* token;
+	char* rest = msg_buf;
+	strcpy(msg.nick, "");
+	empty_game_board(&msg.game);
+	token = strtok_r(rest, " ", &rest);
+	msg.message_type = (message_type) atoi(token);
+
+
+	switch(msg.message_type){
+		case CONNECT:
+			token = strtok_r(rest, " ", &rest);
+			strcpy(msg.nick, token);
+			break;
+		case PING: case WAIT: case DISCONNECT:
+			token = strtok_r(rest, " ", &rest);
+			strcpy(msg.nick, token);
 			free(msg_buf);
 			return msg;
 		case MOVE: case GAME_FOUND: case GAME_FINISHED:
@@ -173,11 +242,14 @@ message receive_message_nonblock(int fd){
 
 	switch (msg.message_type) {
 		case CONNECT:
-				token = strtok_r(rest, " ", &rest);
-				strcpy(msg.nick, token);
+			token = strtok_r(rest, " ", &rest);
+			strcpy(msg.nick, token);
 			break;
 		case PING: case WAIT: case DISCONNECT:
-			break;
+			token = strtok_r(rest, " ", &rest);
+			strcpy(msg.nick, token);
+			free(msg_buf);
+			return msg;
 		case MOVE: case GAME_FOUND: case GAME_FINISHED:
 			token = strtok_r(rest, " ", &rest);
 			strcpy(msg.game.board, token);

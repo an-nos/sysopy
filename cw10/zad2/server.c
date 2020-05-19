@@ -25,11 +25,22 @@ int is_client(int i){
 	return i < MAX_CLIENTS && clients[i].fd != -1;
 }
 
+
+int get_client_index(char* nick){
+	for(int i = 0; i < MAX_CLIENTS; i++){
+		if(is_client(i) && strcmp(nick, clients[i].nick) == 0) return i;
+	}
+	return -1;
+}
+
 void close_server(){
 
 	if(pthread_cancel(net_thread) == -1) error_exit("Could not cancel net tread");
 	if(pthread_cancel(ping_thread) == -1) error_exit("Could not cancel ping thread");
 
+	close(local_sock);
+	unlink(socket_path);
+	close(inet_sock);
 }
 
 void sigint_handler_server(int signo){
@@ -40,7 +51,7 @@ void sigint_handler_server(int signo){
 void start_local(){
 	int local_domain = AF_UNIX;
 
-	local_sock = socket(local_domain, SOCK_STREAM, 0);
+	local_sock = socket(local_domain, SOCK_DGRAM, 0);
 	if(local_sock == -1) error_exit("Local socket initialization failed.");
 
 	local_sockaddr.sa_family = local_domain;
@@ -49,8 +60,6 @@ void start_local(){
 	int local_bind = bind(local_sock, &local_sockaddr, sizeof(local_sockaddr));
 	if(local_bind == -1) error_exit("Local bind failed.");
 
-	int local_listen = listen(local_sock, MAX_CLIENTS);
-	if(local_listen == -1) error_exit("Local listen failed.");
 
 	printf("Local socket fd: %d\n", local_sock);
 
@@ -59,7 +68,7 @@ void start_local(){
 void start_inet(){
 	int inet_domain = AF_INET;
 
-	inet_sock = socket(inet_domain, SOCK_STREAM, 0);
+	inet_sock = socket(inet_domain, SOCK_DGRAM, 0);
 	if(inet_sock == -1) error_exit("Inet socket initialization failed");
 
 	inet_sockaddr.sin_family = inet_domain;
@@ -69,26 +78,27 @@ void start_inet(){
 	int inet_bind = bind(inet_sock, (struct sockaddr*) &inet_sockaddr, sizeof(inet_sockaddr));
 	if(inet_bind == -1) error_exit("Inet bind failed.");
 
-	int inet_listen = listen(inet_sock, MAX_CLIENTS);
-	if(inet_listen == -1) error_exit("Inet listen failed.");
+
 
 }
 
-void disconnect_client(int i){
-	printf("Disconnecting %s\n", clients[i].nick);
-	if(!is_client(i)) return;
-	if(shutdown(clients[i].fd, SHUT_RDWR) < 0)
-		error_exit("Could not disconnect client.");
-
-	if(close(clients[i].fd) < 0)
-		error_exit("Could not close client.");
-
-}
+//void disconnect_client(int i){
+//	printf("Disconnecting %s\n", clients[i].nick);
+//	if(!is_client(i)) return;
+//	if(shutdown(clients[i].fd, SHUT_RDWR) < 0)
+//		error_exit("Could not disconnect client.");
+//
+//	if(close(clients[i].fd) < 0)
+//		error_exit("Could not close client.");
+//
+//}
 
 
 void empty_client(int i){
 	if(clients[i].nick != NULL) free(clients[i].nick);
+	if(clients[i].addr != NULL) free(clients[i].addr);
 	clients[i].nick = NULL;
+	clients[i].addr = NULL;
 	clients[i].fd = -1;
 	clients[i].game = NULL;
 	clients[i].active = 0;
@@ -125,8 +135,6 @@ void process_move(game* game){
 	if(game->turn == 'X') game->turn = 'O';
 	else if(game->turn == 'O') game->turn = 'X';
 
-
-
 }
 
 int is_nick_available(char* nick){
@@ -153,10 +161,10 @@ void start_game(int id1, int id2){
 	clients[id1].game = clients[id2].game = game;
 
 	game->winner = clients[id1].symbol;
-	send_message(clients[id1].fd, GAME_FOUND, game, NULL);
+	send_message_to(clients[id1].fd, clients[id1].addr, GAME_FOUND, game, clients[id1].nick);
 
 	game->winner = clients[id2].symbol;
-	send_message(clients[id2].fd, GAME_FOUND, game, NULL);
+	send_message_to(clients[id2].fd, clients[id2].addr, GAME_FOUND, game, clients[id2].nick);
 
 	game->winner = '-';
 
@@ -167,32 +175,33 @@ void delete_game(game* game){
 	free(game);
 }
 
-void connect_client(int fd){
+void connect_client(int fd, struct sockaddr* addr, char* rec_nick){
 	printf("Connecting client\n");
 
-	int client_fd = accept(fd, NULL, NULL);
-	if(client_fd < 0) error_exit("Could not accept client.");
 
-	message msg = receive_message(client_fd);
 
 	char* nick = calloc(NICK_LEN, sizeof(char));
 
-	strcpy(nick, msg.nick);
+	strcpy(nick, rec_nick);
 
 	if(is_nick_available(nick) == 0){
-		send_message(client_fd, CONNECT_FAILED, NULL, "Your nick is already taken");
+		send_message_to(fd, addr, CONNECT_FAILED, NULL, "Your nick is already taken");
+		free(nick);
 		return;
 	}
 	if(first_free == MAX_CLIENTS){
-		send_message(client_fd, CONNECT_FAILED, NULL, "Server is full");
+		send_message_to(fd, addr, CONNECT_FAILED, NULL, "Server is full");
+		free(nick);
+		return;
 	}
 
-	send_message(client_fd, CONNECT, NULL, "Connected");
+	send_message_to(fd, addr, CONNECT, NULL, "Connected");
 
 
 	clients[first_free].nick = nick;
 	clients[first_free].active = 1;
-	clients[first_free].fd = client_fd;
+	clients[first_free].fd = fd;
+	clients[first_free].addr = addr;
 
 
 	for(int i = 0; i < MAX_CLIENTS; i++){
@@ -205,7 +214,7 @@ void connect_client(int fd){
 	}
 	else{
 		waiting_idx = first_free;
-		send_message(client_fd, WAIT, NULL, NULL);
+		send_message_to(fd, clients[first_free].addr, WAIT, NULL, nick);
 		printf("WAIT sent\n");
 	}
 
@@ -217,74 +226,79 @@ void connect_client(int fd){
 
 void net_routine(void* arg){
 
-	struct pollfd poll_fds[MAX_CLIENTS + 2];
+	struct pollfd poll_fds[2];
 
-	poll_fds[MAX_CLIENTS].fd = local_sock;
-	poll_fds[MAX_CLIENTS + 1].fd = inet_sock;
-
+	poll_fds[0].fd = local_sock;
+	poll_fds[1].fd = inet_sock;
+	poll_fds[0].events = POLLIN;
+	poll_fds[1].events = POLLIN;
 
 	for( ; ; ) {
 
 		pthread_mutex_lock(&clients_mutex);
+		printf("Locked mutex in net_routine1\n");
 
-		for (int i = 0; i < MAX_CLIENTS + 2; i++) {
-			if(i < MAX_CLIENTS) poll_fds[i].fd = clients[i].fd;
+		for (int i = 0; i < 2; i++) {
 			poll_fds[i].events = POLLIN;
 			poll_fds[i].revents = 0;
 		}
 
 		pthread_mutex_unlock(&clients_mutex);
+		printf("Unlocked mutex in net_routine1\n");
 
 		printf("Polling...\n");
-		if(poll(poll_fds, MAX_CLIENTS + 2, -1) == -1) error_exit("Poll failed.");
-
+		if(poll(poll_fds, 2, -1) == -1) error_exit("Poll failed.");
 		pthread_mutex_lock(&clients_mutex);
 
-		for(int i = 0; i < MAX_CLIENTS + 2; i++){
-			if(i < MAX_CLIENTS && !is_client(i)) continue;
-
+		for(int i = 0; i < 2; i++){
+			printf("They see me pollin, they hatin\n");
 			if(poll_fds[i].revents && POLLIN){
-				if(poll_fds[i].fd == local_sock || poll_fds[i].fd == inet_sock){
-					connect_client(poll_fds[i].fd);
-				}
-				else{
-					message msg = receive_message(poll_fds[i].fd);
-//					printf("Message received in server\n");
-					switch (msg.message_type) {
-						case MOVE:
+				struct sockaddr* addr = malloc(sizeof(struct sockaddr));
+				socklen_t len = sizeof(&addr);
+				printf("DESCRIPTOR: %d\n", poll_fds[i].fd);
+				message msg = receive_message_from(poll_fds[i].fd, addr, len);
+				printf("Message received in server\n");
+				int j;
+				switch (msg.message_type) {
+					case CONNECT:
+						connect_client(poll_fds[i].fd, addr, msg.nick);
+						break;
+					case MOVE:
 						printf("Received move\n");
+						j = get_client_index(msg.nick);
 						process_move(&msg.game);
 						if(msg.game.winner == '-') {
-							send_message(clients[clients[i].opponent_idx].fd, MOVE, &msg.game, NULL);
+							send_message_to(clients[clients[j].opponent_idx].fd, clients[clients[j].opponent_idx].addr, MOVE, &msg.game, clients[clients[j].opponent_idx].nick);
 						}
 
 						else{
-							send_message(poll_fds[i].fd, GAME_FINISHED, &msg.game, NULL);
-							send_message(clients[clients[i].opponent_idx].fd, GAME_FINISHED, &msg.game, NULL);
-							delete_game(clients[i].game);
+							send_message_to(clients[j].fd, clients[j].addr, GAME_FINISHED, &msg.game, clients[j].nick);
+							send_message_to(clients[clients[j].opponent_idx].fd, clients[clients[j].opponent_idx].addr, GAME_FINISHED, &msg.game, clients[clients[j].opponent_idx].nick);
+							delete_game(clients[j].game);
 						}
+						free(addr);
 						break;
 					case PING:
-						clients[i].active = 1;
+						j = get_client_index(msg.nick);
+						clients[j].active = 1;
+						free(addr);
 						break;
 					case DISCONNECT:
+						j = get_client_index(msg.nick);
 						printf("Received disconnect from client\n");
-						disconnect_client(i);
-						empty_client(i);
+//						disconnect_client(j);
+						empty_client(j);
+						free(addr);
 						break;
 					default:
+						free(addr);
 						break;
 					}
 				}
-			}else if(is_client(i) && poll_fds[i].revents && POLLHUP){
-				printf("Disconnect...\n");
-				disconnect_client(i);
-				empty_client(i);
-			}
 		}
 
 		pthread_mutex_unlock(&clients_mutex);
-
+		printf("Locked mutex in net_routine2\n");
 	}
 
 }
@@ -297,12 +311,14 @@ void ping_routine(void* arg){
 		printf("Ping in progress...\n");
 
 		pthread_mutex_lock(&clients_mutex);
+		printf("Locked mutex in ping_routine\n");
+
 
 		for(int i = 0; i < MAX_CLIENTS; i++){
 			if(is_client(i)){
 				clients[i].active = 0;
 //				printf("PING sent to %s\n", clients[i].nick);
-				send_message(clients[i].fd, PING, NULL, NULL);
+				send_message_to(clients[i].fd, clients[i].addr, PING, NULL, clients[i].nick);
 			}
 		}
 
@@ -315,13 +331,15 @@ void ping_routine(void* arg){
 		for(int i = 0; i < MAX_CLIENTS; i++){
 			if(is_client(i) && clients[i].active == 0) {
 				printf("Response from %d was not received. Disconnecting %d...\n", i, i);
-				send_message(clients[i].fd, DISCONNECT, NULL, NULL);
-				disconnect_client(i);
+				send_message_to(clients[i].fd, clients[i].addr, DISCONNECT, NULL, clients[i].nick);
+//				disconnect_client(i);
 				empty_client(i);
 			}
 		}
 
 		pthread_mutex_unlock(&clients_mutex);
+		printf("Unlocked mutex in ping_routine\n");
+
 		printf("Ping ended.\n");
 
 	}

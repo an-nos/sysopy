@@ -10,9 +10,10 @@ int move;
 
 void disconnect_from_server(){
 	printf("Disconnecting from server...\n");
-	send_message(server_fd, DISCONNECT, NULL, NULL);
-	if(shutdown(server_fd, SHUT_RDWR) < 0) error_exit("Could not shutdown.");
-	if(close(server_fd) < 0) error_exit("Could not close server descriptor.");
+	send_message(server_fd, DISCONNECT, NULL, nick);
+//	if(shutdown(server_fd, SHUT_RDWR) < 0) error_exit("Could not shutdown.");
+//	if(close(server_fd) < 0) error_exit("Could not close server descriptor.");
+	if(is_local) unlink(nick);
 	exit(EXIT_SUCCESS);
 }
 
@@ -22,13 +23,21 @@ void sigint_handler_client(int signo){
 }
 
 void local_connect_to_server(){
-	struct sockaddr_un addr;
 
+	struct sockaddr_un addr;
 	addr.sun_family = AF_UNIX;
 	strcpy(addr.sun_path, server);
 
-	server_fd = socket(AF_UNIX, SOCK_STREAM, 0);
+	server_fd = socket(AF_UNIX, SOCK_DGRAM, 0);
 	if(server_fd < 0) error_exit("Socket to server failed.");
+
+	struct sockaddr_un c_addr;
+	c_addr.sun_family = AF_UNIX;
+	strcpy(c_addr.sun_path, nick);
+
+
+	if(bind(server_fd, (struct sockaddr*) &c_addr, sizeof(c_addr)) < 0)
+		error_exit("Bind failed.");
 
 	if(connect(server_fd, (struct sockaddr*) &addr, sizeof(addr)) < 0)
 		error_exit("Connect to server failed.");
@@ -38,13 +47,20 @@ void local_connect_to_server(){
 void inet_connect_to_server(){
 
 	struct sockaddr_in addr;
-
 	addr.sin_family = AF_INET;
 	addr.sin_port = htons(port_no);
 	addr.sin_addr.s_addr = inet_addr(server);
 
-	server_fd = socket(AF_INET, SOCK_STREAM, 0);
+	server_fd = socket(AF_INET, SOCK_DGRAM, 0);
 	if(server_fd < 0) error_exit("Socket to server failed.");
+
+	struct sockaddr_in c_addr;
+	c_addr.sin_family = AF_INET;
+	c_addr.sin_port = 0;
+	c_addr.sin_addr.s_addr = inet_addr(server);
+
+	if(bind(server_fd, (struct sockaddr*) &c_addr, sizeof(c_addr))<0)
+		error_exit("Bind failed.");
 
 	if(connect(server_fd, (struct sockaddr*) &addr, sizeof(addr)) < 0)
 		error_exit("Connect to server failed.");
@@ -96,8 +112,8 @@ void make_move(message *msg){
 		message rec_msg = receive_message_nonblock(server_fd);
 		switch(rec_msg.message_type){
 			case PING:
-//				printf("Received PING from server. Pinging back...\n");
-				send_message(server_fd, PING, NULL, NULL);
+				printf("Received PING from server. Pinging back...\n");
+				send_message(server_fd, PING, NULL, nick);
 				break;
 			case DISCONNECT:
 				printf("Received DISCONNECT from server.\n");
@@ -117,7 +133,7 @@ void make_move(message *msg){
 	msg->game.board[move] = symbol;
 	print_gameboard(&msg->game);
 
-	send_message(server_fd, MOVE, &msg->game, NULL);
+	send_message(server_fd, MOVE, &msg->game, nick);
 
 }
 
@@ -153,7 +169,7 @@ void client_routine(){
 				break;
 			case PING:
 				printf("Received PING from server. Pinging back...\n");
-				send_message(server_fd, PING, NULL, NULL);
+				send_message(server_fd, PING, NULL, nick);
 				break;
 			case DISCONNECT:
 				printf("Received DISCONNECT from server.\n");
