@@ -98,7 +98,7 @@ void make_move(message *msg){
 	for( ; ; ) {
 		if (move < 0 || move > 8 || msg->game.board[move] != '-') {
 			message rec_msg = receive_message_nonblock(server_fd);
-			printf("msgread\n");
+//			printf("msgread\n");
 			switch (rec_msg.message_type) {
 				case PING:
 					printf("Received PING from server. Pinging back...\n");
@@ -177,6 +177,7 @@ void client_routine(){
 
 int main(int argc, char** argv){
 
+
 	if(argc < 4) error_exit("Invalid arguments. Expected: nick LOCAL/INET server_address");
 
 	nick = argv[1];
@@ -185,6 +186,7 @@ int main(int argc, char** argv){
 	else if(strcmp(argv[2], "INET") == 0) is_local = 0;
 	else  error_exit("Invalid arguments. Expected: nick LOCAL/INET server_address");
 
+	srand(time(NULL));
 
 	if(is_local){
 		server = argv[3];

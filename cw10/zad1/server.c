@@ -131,6 +131,13 @@ void process_move(game* game){
 
 }
 
+int get_free_idx(){
+	for(int i = 0; i < MAX_CLIENTS; i++){
+		if(!is_client(i)) return i;
+	}
+	return -1;
+}
+
 int is_nick_available(char* nick){
 	for(int i = 0; i < MAX_CLIENTS; i++){
 		if(is_client(i) && strcmp(nick, clients[i].nick) == 0) return 0;
@@ -149,18 +156,18 @@ void start_game(int id1, int id2){
 
 	//if message type is GAME_FOUND, then winner means only whose symbol it is
 
-	game* game = malloc(sizeof(game));
-	empty_game_board(game);
+	game* new_game = malloc(sizeof(game));
+	empty_game_board(new_game);
 
-	clients[id1].game = clients[id2].game = game;
+	clients[id1].game = clients[id2].game = new_game;
 
-	game->winner = clients[id1].symbol;
-	send_message(clients[id1].fd, GAME_FOUND, game, NULL);
+	new_game->winner = clients[id1].symbol;
+	send_message(clients[id1].fd, GAME_FOUND, new_game, NULL);
 
-	game->winner = clients[id2].symbol;
-	send_message(clients[id2].fd, GAME_FOUND, game, NULL);
+	new_game->winner = clients[id2].symbol;
+	send_message(clients[id2].fd, GAME_FOUND, new_game, NULL);
 
-	game->winner = '-';
+	new_game->winner = '-';
 
 
 }
@@ -185,7 +192,7 @@ void connect_client(int fd){
 		send_message(client_fd, CONNECT_FAILED, NULL, "Your nick is already taken");
 		return;
 	}
-	if(first_free == MAX_CLIENTS){
+	if(first_free == -1){
 		send_message(client_fd, CONNECT_FAILED, NULL, "Server is full");
 	}
 
@@ -211,7 +218,7 @@ void connect_client(int fd){
 		printf("WAIT sent\n");
 	}
 
-	first_free++;
+	first_free = get_free_idx();
 
 	printf("Connected\n");
 
