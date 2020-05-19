@@ -34,10 +34,6 @@ void close_server(){
 	close(inet_sock);
 }
 
-void sigint_handler_server(int signo){
-	printf("Closing server...");
-	close_server();
-}
 
 void start_local(){
 	int local_domain = AF_UNIX;
@@ -96,6 +92,7 @@ void empty_client(int i){
 	clients[i].active = 0;
 	clients[i].symbol = '-';
 	clients[i].opponent_idx = -1;
+	if(waiting_idx == i) waiting_idx = -1;
 }
 
 void process_move(game* game){
@@ -344,6 +341,14 @@ void ping_routine(void* arg){
 
 }
 
+void at_exit_fun(){
+	close_server();
+}
+
+void sigint_handler_server(int signo){
+	exit(EXIT_SUCCESS);
+}
+
 
 int main(int argc, char** argv){
 
@@ -352,7 +357,9 @@ int main(int argc, char** argv){
 	port_no = atoi(argv[1]);
 	socket_path = argv[2];
 
+	atexit(at_exit_fun);
 	signal(SIGINT, sigint_handler_server);
+
 
 	for(int i = 0; i < MAX_CLIENTS; i++){
 		empty_client(i);

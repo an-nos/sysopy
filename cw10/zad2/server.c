@@ -49,10 +49,7 @@ void close_server(){
 	close(inet_sock);
 }
 
-void sigint_handler_server(int signo){
-	printf("Closing server...");
-	close_server();
-}
+
 
 void start_local(){
 	int local_domain = AF_UNIX;
@@ -344,6 +341,10 @@ void at_exit_fun(){
 	close_server();
 }
 
+void sigint_handler_server(int signo){
+	exit(EXIT_SUCCESS);
+}
+
 int main(int argc, char** argv){
 
 	if(argc < 3) error_exit("Invalid arguments. Expected: port_number socket_path");
@@ -353,9 +354,9 @@ int main(int argc, char** argv){
 
 
 	signal(SIGINT, sigint_handler_server);
+	atexit(at_exit_fun);
 
 	srand(time(NULL));
-	atexit(at_exit_fun);
 
 	for(int i = 0; i < MAX_CLIENTS; i++){
 		empty_client(i);
