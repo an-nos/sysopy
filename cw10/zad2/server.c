@@ -98,6 +98,7 @@ void empty_client(int i){
 	clients[i].active = 0;
 	clients[i].symbol = '-';
 	clients[i].opponent_idx = -1;
+	if(waiting_idx == i) waiting_idx = -1;
 }
 
 void process_move(game* game){
@@ -339,6 +340,10 @@ void ping_routine(void* arg){
 }
 
 
+void at_exit_fun(){
+	close_server();
+}
+
 int main(int argc, char** argv){
 
 	if(argc < 3) error_exit("Invalid arguments. Expected: port_number socket_path");
@@ -346,7 +351,11 @@ int main(int argc, char** argv){
 	port_no = atoi(argv[1]);
 	socket_path = argv[2];
 
+
 	signal(SIGINT, sigint_handler_server);
+
+	srand(time(NULL));
+	atexit(at_exit_fun);
 
 	for(int i = 0; i < MAX_CLIENTS; i++){
 		empty_client(i);

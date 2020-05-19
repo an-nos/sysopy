@@ -12,7 +12,6 @@ void disconnect_from_server(){
 	printf("Disconnecting from server...\n");
 	send_message(server_fd, DISCONNECT, NULL, nick);
 	if(is_local) unlink(nick);
-	exit(EXIT_SUCCESS);
 }
 
 void sigint_handler_client(int signo){
@@ -170,7 +169,6 @@ void client_routine(){
 				if(msg.game.winner == symbol) printf("YOU WON!\n");
 				else if(msg.game.winner == 'D') printf("IT'S A DRAW!\n");
 				else printf("YOU LOST. REALLY?\n");
-				disconnect_from_server();
 				exit(EXIT_SUCCESS);
 				break;
 			case PING:
@@ -179,7 +177,6 @@ void client_routine(){
 				break;
 			case DISCONNECT:
 				printf("Received DISCONNECT from server.\n");
-				sigint_handler_client(SIGINT);
 				exit(EXIT_SUCCESS);
 			default: break;
 		}
