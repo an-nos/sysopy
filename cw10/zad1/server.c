@@ -169,7 +169,6 @@ void start_game(int id1, int id2){
 
 	new_game->winner = '-';
 
-
 }
 
 void delete_game(game* game){
@@ -278,6 +277,10 @@ void net_routine(void* arg){
 						break;
 					case DISCONNECT:
 						printf("Received disconnect from client\n");
+						if(is_client(clients[i].opponent_idx)){
+							disconnect_client(clients[i].opponent_idx);
+							empty_client(clients[i].opponent_idx);
+						}
 						disconnect_client(i);
 						empty_client(i);
 						break;
@@ -325,6 +328,10 @@ void ping_routine(void* arg){
 			if(is_client(i) && clients[i].active == 0) {
 				printf("Response from %d was not received. Disconnecting %d...\n", i, i);
 				send_message(clients[i].fd, DISCONNECT, NULL, NULL);
+				if(is_client(clients[i].opponent_idx)){
+					disconnect_client(clients[i].opponent_idx);
+					empty_client(clients[i].opponent_idx);
+				}
 				disconnect_client(i);
 				empty_client(i);
 			}

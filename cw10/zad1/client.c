@@ -74,15 +74,12 @@ void print_instruction(){
 void concurrent_move(void* arg){
 	message* msg = (message*) arg;
 	printf("Enter your move: ");
-	printf("Move before entering %d\n", move);
 
 	int move_char = getchar();
-	printf("new move %c\n", move_char);
 	move = move_char - '0';
 
 	while(move < 0 || move > 8 || msg->game.board[move] != '-'){
 		move_char = getchar();
-		printf("new move\n");
 		move = move_char - '0';
 	}
 	pthread_exit(0);
@@ -98,7 +95,6 @@ void make_move(message *msg){
 	for( ; ; ) {
 		if (move < 0 || move > 8 || msg->game.board[move] != '-') {
 			message rec_msg = receive_message_nonblock(server_fd);
-//			printf("msgread\n");
 			switch (rec_msg.message_type) {
 				case PING:
 					printf("Received PING from server. Pinging back...\n");
